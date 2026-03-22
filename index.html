@@ -24,6 +24,7 @@
             --border-color: #E8E2D5;
             --shadow: 0 8px 20px rgba(0,0,0,0.04);
             --reader-text: #2C2C2C;
+            --reader-font-size: 22px; 
         }
 
         [data-theme="dark"] {
@@ -87,7 +88,7 @@
         .book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 10px; }
         .book-card { cursor: pointer; width: 100%; transition: transform 0.2s; }
         .book-card:active { transform: scale(0.96); }
-        .book-cover-container { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 10px; background: #eee; }
+        .book-cover-container { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 10px; background: var(--border-color); }
         .book-cover { width: 100%; height: 100%; object-fit: cover; }
         .book-title { font-size: 13px; font-weight: 700; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text-main); }
 
@@ -102,7 +103,8 @@
         #reader-page.mode-scroll #reader-scroll-view { overflow-y: auto; touch-action: pan-y; }
 
         #reader-page.mode-paging #reader-flow { 
-            height: 100vh; 
+            height: calc(100vh - 110px - env(safe-area-inset-bottom)); 
+            margin-top: max(55px, env(safe-area-inset-top));
             column-width: 100vw; 
             column-gap: 0; 
             padding: 0;
@@ -113,14 +115,18 @@
         #reader-page.mode-scroll #reader-flow { 
             height: auto; 
             column-width: auto; 
-            padding: 100px 24px 120px 24px;
+            margin-top: 0;
+            padding: calc(70px + env(safe-area-inset-top)) 0 calc(120px + env(safe-area-inset-bottom)) 0;
+            transform: none !important; 
         }
 
-        .reader-content-inner { padding: 80px 24px; line-height: 2.0; font-size: 18px; text-align: justify; }
-        #reader-page.mode-scroll .reader-content-inner { padding: 0; }
+        .chapter-container { margin-bottom: 50px; }
+        .reader-content-inner { padding: 0 24px; line-height: 2.0; font-size: var(--reader-font-size); text-align: justify; transition: font-size 0.2s; }
         .reader-content-inner p { margin-bottom: 1.5em; text-indent: 2em; }
+        #reader-flow.bold-text .reader-content-inner { font-weight: 700; }
+        
         .reader-text-body h2 { padding: 0 24px; font-size: 1.6em; font-weight: 900; color: inherit; margin-bottom: 20px; }
-        #reader-end-tag { padding: 60px 24px; text-align: center; color: var(--text-mute); font-size: 14px; letter-spacing: 2px; }
+        .chapter-end-tag { padding: 40px 24px 20px; text-align: center; color: var(--text-mute); font-size: 14px; letter-spacing: 2px; }
 
         /* Reader UI */
         .reader-ui { position: fixed; width: 100%; background: var(--nav-bg); backdrop-filter: blur(25px); z-index: 2200; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -132,6 +138,8 @@
         #reader-tap-zone .tap-side, #reader-tap-zone .tap-middle { pointer-events: auto; }
         .tap-side { width: 25%; height: 100%; cursor: pointer; }
         .tap-middle { flex: 1; height: 100%; cursor: pointer; }
+        
+        #reader-page.mode-scroll #reader-tap-zone { display: none; }
 
         /* Overlays */
         .overlay { position: fixed; bottom: 0; width: 100%; height: 0; background: var(--nav-bg); z-index: 2300; transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 30px 30px 0 0; overflow: hidden; }
@@ -142,8 +150,9 @@
         .bg-dot { width: 38px; height: 38px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
         .bg-dot.active { border-color: var(--primary); transform: scale(1.1); }
 
-        .mode-btn { padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px; background: var(--card-bg); color: var(--text-mute); font-weight: 600; cursor: pointer; }
+        .mode-btn { padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px; background: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; }
         .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .mode-btn:active { transform: scale(0.95); }
 
         #page-hint { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 20px; font-size: 12px; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3000; font-weight: bold; }
         
@@ -192,8 +201,8 @@
             <div class="me-header-v4">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bobi" class="me-avatar-v4">
                 <div style="flex: 1;">
-                    <div style="font-weight: 900; font-size: 1.4rem;">即将推出</div>
-                    <div style="color: var(--text-mute); font-size: 13px;">如果一个男人没有迪克，那他一定是波比。</div>
+                    <div style="font-weight: 900; font-size: 1.4rem;">波比用户</div>
+                    <div style="color: var(--text-mute); font-size: 13px;">书山有路勤为径</div>
                 </div>
             </div>
             <div class="stat-grid">
@@ -234,8 +243,13 @@
         <div style="padding: 15px 20px;"><i data-lucide="chevron-left" size="30" onclick="closeDetail()" style="cursor:pointer"></i></div>
         <div style="flex: 1; overflow-y: auto; text-align: center; -webkit-overflow-scrolling: touch;">
             <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); margin-bottom: 20px;">
-            <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:8px;"></h2>
-            <p id="det-author" style="color:var(--text-mute); font-size:14px; margin-bottom:15px;"></p>
+            <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:12px;"></h2>
+            
+            <div style="display:flex; justify-content:center; align-items:center; gap: 8px; margin-bottom: 15px;">
+                <img id="det-author-pfp" style="width:24px; height:24px; border-radius:50%; background:var(--card-bg); object-fit:cover;">
+                <p id="det-author" style="color:var(--text-mute); font-size:14px; margin: 0;"></p>
+            </div>
+
             <div style="background: var(--primary-light); display:inline-block; padding: 6px 15px; border-radius: 20px; color: var(--primary); font-weight: bold; font-size: 12px;">
                 <i data-lucide="timer" size="14" style="vertical-align:middle;"></i> <span id="cur-timer">00:00:00</span>
             </div>
@@ -258,9 +272,11 @@
             <i data-lucide="chevron-left" size="30" onclick="closeReader()" style="cursor:pointer"></i>
             <span id="reader-title" style="margin-left:15px; font-weight:900; flex:1;"></span>
         </div>
-        <div id="reader-scroll-view" onscroll="onReaderScroll()">
+        
+        <div id="reader-scroll-view" onscroll="onReaderScroll()" onclick="if(readMode === 'scroll') toggleReaderUI()">
             <div id="reader-flow" class="reader-text-body"></div>
         </div>
+        
         <div class="reader-ui reader-footer">
             <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
                 <div class="nav-item" onclick="toggleOverlay('toc')"><i data-lucide="menu"></i><span>目录</span></div>
@@ -274,6 +290,24 @@
         </div>
         <div id="overlay-set" class="overlay">
             <div class="overlay-header"><span>设置</span><i data-lucide="x" size="24" onclick="toggleOverlay('set')"></i></div>
+            
+            <div class="setting-row">
+                <span>字号大小</span>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="mode-btn" onclick="changeFontSize(-2)">A-</button>
+                    <span id="font-size-display" style="font-weight:900; width:30px; text-align:center;">22</span>
+                    <button class="mode-btn" onclick="changeFontSize(2)">A+</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span>加粗文字</span>
+                <label class="switch">
+                    <input type="checkbox" id="bold-font-toggle" onchange="toggleFontWeight(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="setting-row">
                 <span>阅读翻页</span>
                 <div style="display:flex; gap:10px;">
@@ -306,115 +340,27 @@
     </div>
 
     <script>
-        // Replace with your actual Discord Webhook URL
         const discordWebhookUrl = "";
 
         const BOOKS_DATA = {
             "b1": { 
-                name: "我重生了，前一世我是正常男生被人欺负，这一世我决定成为男娘", author: "比波", 
-                cover: "https://i.ibb.co/PsrywRbb/7-A54-EF52-CFDA-4062-8-D0-C-D5-C2-B47-BBDBB.png", 
-                desc: `15岁，重生回聖恩慈心書院中二留级生魏家明，前世上课用iPad刷片、偷偷想玩王者却被MDM封死，永远倒数第一，被黄英泽那群人欺负三年，女生当空气，毕业后摆烂到30岁还跟妈挤出租屋，最后猝死在屏幕前。
-这一世，他发誓要认真学习！每天好好听课！努力读书！摆脱废物标签，做个正常男生！
-结果——系统强制上线了。
-【最靓男娘养成系统】用甜到发腻的femboy软萌少女音强行绑定：“宿主前世太惨啦～人家要帮你逆袭哦～拒绝无效喵～”
-想学习？封锁！想交友？无效！想正常做人？统统不行！
-系统直接unblock iPad MDM，让他能偷偷玩王者，但必须用可爱femboy音语音聊天辅助；逼他戴粉色蝴蝶结、穿丝袜打底裤、厕所练妆、肝颜值+可爱度；主线任务：成为全校最靓男娘！
-主角内心崩溃：“我明明想认真学习啊！系统你这个变态坑货！”
-却被系统甜甜威胁：“不肝男娘+玩游戏，就扣寿命+全校直播前世黑历史哦～嘻嘻～”
-从前排靠门社死位坐着，被黄英泽从后排右角扔纸团嘲讽；iPad偷偷刷男娘教程被巡堂老师差点抓包；厕所练妆差点被堵门……
-明明想当普通男生，却被系统一步步逼成“明姐”！
-这是一个重生少年，想努力学习却被强制男娘系统卷入抽象逆袭的沙雕爽文！
-“学习路线已封锁，男娘之路，肝就完事儿了！”
-“前世透明沙包，这一世被迫可爱yyds（被迫的）！”
-“系统：宿主乖乖当最靓男娘，人家用femboy音陪你玩王者～”
-“魏家明：我不想啊！！！”`, 
+                name: "剑神波比", author: "代码诗人", 
+                cover: "https://images.unsplash.com/photo-1543004404-4ef3c7f52ecd?q=60&w=150&auto=format&fit=crop", 
+                desc: `自幼便被视为废物的波比，在一场意外中觉醒了代码之魂。从此，他以笔为剑，斩尽天下Bug。\n\n「这个世界的底层逻辑，由我重新定义！」`, 
                 chapters: [
-                    {t: "第一章：重生15岁 + 最靓男娘养成系统强制上线！我魏家明明明想認真學習卻被系統逼玩遊戲+當男娘！yyds？不，是坑爹啊！", c: `我猛地从床上弹起来，冷汗狂飙，心脏砰砰乱跳像刚打完王者被队友喷退。
-卧槽！我回来了？！
-低头一看：熟悉到想吐的旧校服，床头堆满乱七八糟的课本，还有学校配的那部旧iPad——手機禁帶，只能用這玩意兒上課。MDM管得超嚴，遊戲App全被封鎖，連王者都下載不了，前世我只能偷偷刷點YouTube或看教學影片，連遊戲都玩不了幾次。
-絕了！真的重生回中二了！而且我現在15歲，還留級一年……
-我衝到鏡子前，盯著這張蒼白瘦弱、滿臉痘+黑眼圈的臉，腦子裡瞬間閃過前世那三十年的爛攤子。
-前世，我就是聖恩慈心書院2MK班最抽象的廢物。全班只有32人，小班制，老師盯得死死的，iPad MDM限制遊戲、App下載，表面用來上課筆記，實際我只能偷偷刷片。坐最前面、最靠門的位子（老師一眼掃到，門一開關就被同學看到，社死位置），黃英澤坐在最後排最右邊的角落，帶頭的那群人欺負了我整整三年：偷我iPad藏起來、當眾踹我椅子、把我的書包扔廁所、公開嘲諷“你用iPad刷片干脆退學吧！拖低全班平均分，害我們內卷升大學無望！”。女生把我當空氣，從來沒人搭理我一句。畢業後我直接人間蒸發，三十歲還跟媽擠出租屋，天天用舊iPad刷片都覺得自己是人生贏家，最後猝死在螢幕前的那一刻，我才明白——我這輩子，活得像個透明沙包，死了都沒人記得。
-“這一世……我絕對要改變！”我握緊拳頭，內心燃起希望，“我要認真學習！每天好好聽課！努力讀書！交幾個正常朋友！再也不當廢物了！做個普普通通的男生就行！”
-我深吸一口氣，正準備規劃新的人生路線——
-腦子裡突然響起一道甜得發膩、帶點娘娘腔的軟萌少女音（femboy風）：
-【哎呀呀～宿主魏家明，人家是最靓男娘養成系統哦～強制綁定成功啦～拒絕無效喵～】
-我整個人僵住，差點把鏡子砸了。
-系統？！還用這種聲音？！什麼鬼？！
-【宿主前世太慘了嘛～人家特地為你量身定制唯一逆襲路線：成為全校最靓、最可愛、最讓人記住的男娘！其他路線全部封鎖，認真學習？交友？努力讀書？統統無效！只有男娘路線才能獲得獎勵～人家還會幫你unblock iPad的MDM，讓你偷偷玩遊戲哦～但聲音要用人家這種可愛femboy音輔助，嘻嘻～】
-我差點吐血，在心裡狂吼：“我不要當男娘！我要認真學習！系統你滾啊！還逼我玩遊戲？！”
-【拒絕無效喵～宿主若不接受，人家會扣除全部壽命+隨機社死懲罰×10哦～來，先把粉色蝴蝶結髮夾戴上～這是強制任務啦～】
-我：……
-臥槽，這系統也太變態了吧？！明明我想認真學習，它卻強制我當男娘，還用femboy聲音逼我玩遊戲？！
-【叮！新手禮包已強制發放！】
-【獲得：粉色蝴蝶結髮夾*1（可愛度+5，佩戴後強制+10%社死抗性）】
-【獲得：經驗值+200】
-【當前面板：】
-【顏值：38/100（抽象藝術級別）】
-【可愛度：5/100（純純社恐沙包）】
-【社死抗性：10/100（一碰就炸）】
-【王者段位：青銅III（擺爛象徵）】
-【iPad MDM狀態：已強制unblock遊戲限制（僅限王者+指定男娘相關App，系統魔法加持，暫時不被老師發現）】
-【主線任務強制開啟：成為聖恩慈心書院全校公認的最靓男娘】
-【階段1：顏值≥60，可愛度≥40（獎勵：初級化妝包+社死抗性+20）】
-【警告：宿主若24小時內不開始男娘行動+玩遊戲，將觸發懲罰：全校強制直播前世黑歷史×1】
-我看著空氣中突然出現的粉色蝴蝶結髮夾，整個人都傻了。
-“系統……我真想認真學習啊，我只想正常一點……”
-【宿主別emo啦～前世你認真了三十年，結果呢？人家會用可愛femboy音陪你玩遊戲、肝男娘的～來，先戴上髮夾～嘻嘻～】
-我咬牙切齒，但想到前世黃英澤那群人的嘲笑、那三十年的透明人生……最終還是顫抖著手把粉色蝴蝶結偷偷夾在劉海後面。
-【叮！佩戴成功！可愛度+5，社死抗性+10！當前可愛度：10/100】
-瞬間，我感覺臉沒那麼燙了，但內心還是崩潰：
-“系統你這個變態……我明明想認真學習，卻被你逼著當男娘+玩遊戲……”
-【日常任務已強制刷新！】
-【任務1：上課偷偷用iPad刷男娘教程≥30分鐘（獎勵：經驗+50，可愛度+3）】
-【任務2：穿絲襪/收窄褲腳上學一整天（獎勵：腿部曲線+5%，可愛度+5）】
-【任務3：用iPad玩王者一場（用人家femboy音輔助語音聊天，嘻嘻～獎勵：經驗+100）】
-【宿主請盡快執行，否則懲罰啟動喵～】
-我無奈嘆氣，偷偷把校褲褲腳用別針收窄，又偷了媽一條舊肉色絲襪剪開當打底褲穿。
-“行行行……我做總行了吧？但我還是不想當男娘啊！更不想玩遊戲！”
-出門前，我對著鏡子低聲罵了一句：
-“魏家明，這一世明明想認真學習，卻被系統逼成男娘+玩遊戲……yyds個頭啊！衝……衝個鬼！”
-坐巴士去沙田乙明邨，一路都在心裡跟系統吵架，但它用femboy音甜甜回：
-【宿主加油喵～男娘之路，肝就完事兒了！人家會幫你unblock MDM，讓你偷偷玩王者～前世被黃英澤那群人欺負得那麼慘，這一世就用可愛值+遊戲卷死他們！】
-到校門口，一位巡堂老師瞄了我一眼，皺眉道：
-“同學，校服怎麼穿得這麼奇怪？褲腳收這麼窄，腿上那是……絲襪？回去換！”
-我臉瞬間紅了，系統卻歡快提示：
-【叮！任務2進度+1，腿部曲線+5%，可愛度+5！當前可愛度：15/100】
-我低頭小跑進校，內心崩潰：連老師都注意到了……這系統逼我太狠了！
-衝上樓梯，2MK班門口（全班32人，小班制，老師一眼就能掃到前排門邊的我）。
-推門進去，我習慣性地坐回最前面、最靠門的那個位子。全班32雙眼睛刷刷掃過來——但沒人說話，大家只是看兩秒就繼續低頭玩iPad或聊天，像看空氣一樣。
-黃英澤坐在最後排最右邊的角落，從那個死角傳來一聲低低的嘲笑：
-“魏家明，你今天怎麼回事？穿這麼騷？腿毛還透絲襪出來，惡心死了。”
-他聲音不大，但小班制+教室安靜，全班都聽見了，有人偷笑，有人直接無視。我坐在前排門邊，感覺全班的目光像針一樣扎過來，卻沒人幫腔。
-我臉燒起來，但系統及時響起（femboy音）：
-【嘲諷值+1，經驗+10！被動“越嘲越靓”已開啟喵～宿主請繼續保持！】
-我灰溜溜低頭，內心崩潰卻又燃起一絲火：
-“系統……你贏了。我明明想認真學習，卻被你逼著當男娘+玩遊戲……但前世我已經被欺負夠了，這一世，就算被逼的，我也一定要肝成最靓的那個！”
-上課鈴響。
-老師講英文，我照舊把iPad藏在書下面——但這次不是刷片，而是被迫打開YouTube搜“男娘化妝入門”。
-【叮！日常任務1觸發：刷男娘教程進行中……】
-黃英澤從最後排右邊角落扔了個紙團，正好砸在我後腦勺：
-“廢物！上課還玩iPad？信不信我告訴老師？”
-系統立刻（femboy音）：
-【嘲諷值+1，經驗+10！繼續肝喵～人家已經unblock MDM，你可以偷偷玩王者了哦～】
-我握緊拳頭，內心狂吼：
-“系統你這個強迫狂……我不想當男娘+玩遊戲，但我會肝！因為前世我已經輸夠了！”
-放學後，系統又跳出新提示（femboy音）：
-【任務3強制啟動：現在用iPad玩王者一場！人家會用可愛聲音陪你語音聊天～】
-我嘆了口氣，走向廁所（找隱蔽地方）……
-殊不知，黃英澤那群人已經在走廊等著了……`},
+                    {t: "第一章 觉醒", c: `这是一个万物皆可被编译的世界...\n波比站在破旧的测试室中央，周围充满了蓝色的数据流。他的掌心微微发烫，一个闪烁的字符在皮肤下跃动。\n\n「初始化完成。」一个冰冷的系统音在他脑海中响起。\n\n在这个世界，普通人只能调用基础函数，而波比发现自己竟然能直接修改内核。这意味着，他可以改变重力，可以改写物体的密度，甚至可以删除他人的存在感。\n\n「Bug...我看见了Bug。」他凝视着面前傲慢的考官，嘴角露出一丝冷笑。在他眼里，这位不可一世的考官浑身都是破绽。`},
                     {t: "第二章 逆袭", c: `消息传得飞快。那个测试废柴竟然一招击败了考官！\n\n「不可能，他只是个没背景的底层代码员。」\n\n然而，当波比步入演武场时，所有的质疑都化为了寂静。他没有带剑，只是伸出手指在虚空中轻轻一点。\n\n「Delete.」\n\n瞬间，对手手中厚重的盾牌化为了漫天飞舞的光点。观众席上传来阵阵惊呼，那是从未见过的神迹。波比依然面无表情，他知道，这仅仅是个开始。在这个充满冗余和逻辑错误的世界，他要当那个唯一的管理员。`}
                 ] 
             },
             "b2": { 
                 name: "代码至尊", author: "加班狂人", 
-                cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&h=400&auto=format&fit=crop", 
+                cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=60&w=150&auto=format&fit=crop", 
                 desc: "在这个以代码强弱划分等级的世界，波比是唯一掌握了零 Bug 秘籍的男人。", 
                 chapters: [{t: "第一章 祭坛", c: `云端之巅，代码祭坛正散发着古老的数据波动...\n传说中，只有最纯粹的灵魂才能触碰那段禁忌的源代码。波比一步一步踏上阶梯，脚下的玉石台阶感应到了他的频率，发出悦耳的共鸣声。`}] 
             },
             "b3": { 
                 name: "深夜食堂", author: "美食家", 
-                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&h=400&auto=format&fit=crop", 
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=60&w=150&auto=format&fit=crop", 
                 desc: "一间只在深夜营业的食堂，波比老板用代码烹饪灵魂。", 
                 chapters: [{t: "第一章 开业", c: `当时针指向十二点，偏僻小巷里的那盏红灯笼就会亮起...\n这里的菜谱没有名字，只有一段段温暖的数据指令。第一位客人推门而入，带着一身的疲惫和雨水的冰凉。`}] 
             }
@@ -425,7 +371,9 @@
             PROGRESS: 'bobi_progress_v5', 
             TIMERS: 'bobi_timers_v5',
             MODE: 'bobi_read_mode_v5',
-            THEME: 'bobi_theme_v5'
+            THEME: 'bobi_theme_v5',
+            FONTSIZE: 'bobi_font_size_v5',
+            FONTWEIGHT: 'bobi_font_weight_v5'
         };
 
         let shelf = JSON.parse(localStorage.getItem(STORAGE.SHELF) || '[]');
@@ -433,8 +381,12 @@
         let bookTimers = JSON.parse(localStorage.getItem(STORAGE.TIMERS) || '{}');
         let readMode = localStorage.getItem(STORAGE.MODE) || 'paging';
         
+        let currentFontSize = parseInt(localStorage.getItem(STORAGE.FONTSIZE) || '22');
+        let isFontBold = localStorage.getItem(STORAGE.FONTWEIGHT) === 'true';
+
         let currentId = null, timerInterval = null, currentCh = 0;
         let currentPagingIdx = 0, totalPages = 1;
+        let isNextChapterLoading = false; // Guard for infinite scroll
 
         window.onload = () => {
             lucide.createIcons();
@@ -443,19 +395,64 @@
             updateStats();
             initTheme();
             applyReadMode(readMode);
+            initFontSettings();
             
             setTimeout(() => {
                 const s = document.getElementById('splash-screen');
                 s.style.opacity = '0';
                 setTimeout(() => s.style.display = 'none', 600);
             }, 1000);
+            
+            const readerFlow = document.getElementById('reader-flow');
+            const resizeObserver = new ResizeObserver(() => {
+                if (readMode === 'paging' && document.getElementById('reader-page').style.display === 'block') {
+                    calcPaging();
+                    applyPaging();
+                }
+            });
+            resizeObserver.observe(readerFlow);
         };
+
+        function initFontSettings() {
+            document.getElementById('font-size-display').innerText = currentFontSize;
+            document.documentElement.style.setProperty('--reader-font-size', currentFontSize + 'px');
+            
+            document.getElementById('bold-font-toggle').checked = isFontBold;
+            if(isFontBold) document.getElementById('reader-flow').classList.add('bold-text');
+        }
+
+        function changeFontSize(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 14) currentFontSize = 14;
+            if (currentFontSize > 36) currentFontSize = 36;
+            
+            document.getElementById('font-size-display').innerText = currentFontSize;
+            document.documentElement.style.setProperty('--reader-font-size', currentFontSize + 'px');
+            localStorage.setItem(STORAGE.FONTSIZE, currentFontSize);
+            
+            setTimeout(() => { 
+                if(readMode === 'paging') { calcPaging(); applyPaging(); } 
+            }, 50);
+        }
+
+        function toggleFontWeight(isBold) {
+            isFontBold = isBold;
+            const flow = document.getElementById('reader-flow');
+            if(isBold) flow.classList.add('bold-text');
+            else flow.classList.remove('bold-text');
+            
+            localStorage.setItem(STORAGE.FONTWEIGHT, isBold);
+            
+            setTimeout(() => { 
+                if(readMode === 'paging') { calcPaging(); applyPaging(); } 
+            }, 50);
+        }
 
         function renderList(ids) {
             const grid = document.getElementById('store-grid');
             grid.innerHTML = ids.map(id => `
                 <div class="book-card" onclick="openDetail('${id}')">
-                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}"></div>
+                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}" loading="lazy" decoding="async"></div>
                     <div class="book-title">${BOOKS_DATA[id].name}</div>
                 </div>
             `).join('');
@@ -465,7 +462,7 @@
             const grid = document.getElementById('shelf-grid');
             grid.innerHTML = shelf.length ? shelf.map(id => `
                 <div class="book-card" onclick="openDetail('${id}')">
-                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}"></div>
+                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}" loading="lazy" decoding="async"></div>
                     <div class="book-title">${BOOKS_DATA[id].name}</div>
                 </div>
             `).join('') : '<div style="grid-column:1/4; text-align:center; padding:100px 0; color:var(--text-mute);">空空如也</div>';
@@ -493,6 +490,7 @@
             document.getElementById('det-cover').src = b.cover;
             document.getElementById('det-title').innerText = b.name;
             document.getElementById('det-author').innerText = b.author;
+            document.getElementById('det-author-pfp').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(b.author)}`;
             document.getElementById('det-desc').innerText = b.desc;
             document.getElementById('shelf-btn').innerText = shelf.includes(id) ? '移出书架' : '加入书架';
             
@@ -540,49 +538,60 @@
         function openReader() {
             const saved = bookProgress[currentId] || { ch: 0, page: 0, scrollY: 0 };
             currentCh = saved.ch;
-            currentPagingIdx = saved.page;
+            currentPagingIdx = saved.page || 0;
             
             loadCh(currentCh, false, saved);
             document.getElementById('reader-page').style.display = 'block';
             lucide.createIcons();
         }
 
-        function loadCh(idx, goToLast = false, savedData = null) {
+        function loadCh(idx, goToLast = false, savedData = null, append = false) {
             const b = BOOKS_DATA[currentId];
             if(idx < 0 || idx >= b.chapters.length) return;
-            currentCh = idx;
+            
+            if (!append) currentCh = idx;
 
             const processed = b.chapters[idx].c.split('\n').filter(l => l.trim()).map(l => `<p>${l.trim()}</p>`).join('');
-            document.getElementById('reader-title').innerText = b.name;
             const flow = document.getElementById('reader-flow');
-            flow.innerHTML = `<h2>${b.chapters[idx].t}</h2><div class="reader-content-inner">${processed}</div><div id="reader-end-tag">— 本章完 —</div>`;
+            
+            const chapterHtml = `
+                <div class="chapter-container" data-ch="${idx}">
+                    <h2>${b.chapters[idx].t}</h2>
+                    <div class="reader-content-inner">${processed}</div>
+                    <div class="chapter-end-tag">— 本章完 —</div>
+                </div>
+            `;
+
+            if (append) {
+                flow.insertAdjacentHTML('beforeend', chapterHtml);
+            } else {
+                if(readMode === 'scroll') flow.style.transform = '';
+                flow.innerHTML = chapterHtml;
+                document.getElementById('reader-title').innerText = b.name;
+            }
             
             renderTOC();
             
-            // Critical Fix for Page Number Detection:
-            // We use a small timeout to ensure the browser has rendered the new content
-            // before calculating the scrollWidth/innerWidth ratio.
-            setTimeout(() => {
-                if(readMode === 'paging') {
-                    calcPaging();
-                    if (savedData && savedData.page !== undefined) currentPagingIdx = savedData.page;
-                    else if(goToLast) currentPagingIdx = totalPages - 1;
-                    else currentPagingIdx = 0;
-                    
-                    // Boundary check
-                    if (currentPagingIdx >= totalPages) currentPagingIdx = totalPages - 1;
-                    if (currentPagingIdx < 0) currentPagingIdx = 0;
-                    
-                    applyPaging();
-                } else {
-                    const view = document.getElementById('reader-scroll-view');
-                    if (savedData && savedData.scrollY !== undefined) view.scrollTop = savedData.scrollY;
-                    else if(goToLast) view.scrollTop = view.scrollHeight;
-                    else view.scrollTop = 0;
-                    updateReaderProgress();
-                }
-                showHint(b.chapters[idx].t);
-            }, 150);
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if(readMode === 'paging') {
+                        calcPaging();
+                        if (savedData && savedData.page !== undefined) currentPagingIdx = savedData.page;
+                        else if(goToLast) currentPagingIdx = totalPages - 1;
+                        else currentPagingIdx = 0;
+                        
+                        if (currentPagingIdx >= totalPages) currentPagingIdx = Math.max(0, totalPages - 1);
+                        applyPaging();
+                    } else if (!append) {
+                        const view = document.getElementById('reader-scroll-view');
+                        if (savedData && savedData.scrollY !== undefined) view.scrollTop = savedData.scrollY;
+                        else if(goToLast) view.scrollTop = view.scrollHeight;
+                        else view.scrollTop = 0;
+                    }
+                    if (!append) showHint(b.chapters[idx].t);
+                    isNextChapterLoading = false;
+                }, 50);
+            });
         }
 
         function renderTOC() {
@@ -597,22 +606,17 @@
 
         function calcPaging() {
             const flow = document.getElementById('reader-flow');
-            // Temporarily disable transitions for immediate measurement
-            const originalTransition = flow.style.transition;
+            const oldT = flow.style.transition;
             flow.style.transition = 'none';
-            
-            // Force measurement by reading a property
             const scrollW = flow.scrollWidth;
             const winW = window.innerWidth;
-            
-            totalPages = Math.ceil(scrollW / winW);
-            if (totalPages < 1) totalPages = 1;
-            
-            // Restore transitions
-            setTimeout(() => flow.style.transition = originalTransition || 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)', 50);
+            totalPages = Math.ceil(scrollW / winW) || 1;
+            flow.style.transition = oldT;
+            if (readMode === 'paging') updateReaderProgress();
         }
 
         function applyPaging() {
+            if(readMode !== 'paging') return;
             document.getElementById('reader-flow').style.transform = `translateX(-${currentPagingIdx * 100}vw)`;
             updateReaderProgress();
             saveReaderProgress();
@@ -632,6 +636,28 @@
 
         function onReaderScroll() {
             if(readMode === 'scroll') {
+                const view = document.getElementById('reader-scroll-view');
+                const scrollPos = view.scrollTop + view.clientHeight;
+                const threshold = view.scrollHeight - 300; // Load next chapter when 300px from bottom
+
+                // Infinite Scroll Logic: Load next chapter
+                if (scrollPos > threshold && !isNextChapterLoading) {
+                    const lastChInView = parseInt(document.querySelector('.chapter-container:last-child').dataset.ch);
+                    if (lastChInView < BOOKS_DATA[currentId].chapters.length - 1) {
+                        isNextChapterLoading = true;
+                        loadCh(lastChInView + 1, false, null, true);
+                    }
+                }
+
+                // Update current chapter index based on what's visible
+                const chapters = document.querySelectorAll('.chapter-container');
+                chapters.forEach(c => {
+                    const rect = c.getBoundingClientRect();
+                    if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
+                        currentCh = parseInt(c.dataset.ch);
+                    }
+                });
+
                 updateReaderProgress();
                 saveReaderProgress();
             }
@@ -640,7 +666,6 @@
         function updateReaderProgress() {
             const el = document.getElementById('reader-progress');
             if(readMode === 'paging') {
-                // Ensure page numbers update accurately
                 el.innerText = `${currentPagingIdx + 1} / ${totalPages}`;
             } else {
                 const v = document.getElementById('reader-scroll-view');
@@ -686,8 +711,7 @@
 
         function setReadMode(mode) {
             applyReadMode(mode);
-            // Refresh current chapter to recalculate paging/scrolling layout
-            loadCh(currentCh); 
+            loadCh(currentCh);
         }
 
         function setReaderBg(bg, text, el) {
@@ -712,15 +736,11 @@
         function updateStats() {
             const totalSec = Object.values(bookTimers).reduce((a, b) => a + b, 0);
             document.getElementById('total-read-time').innerText = Math.floor(totalSec / 60);
-            
             const uniqueProgressCount = Object.keys(bookProgress).length;
             document.getElementById('books-count').innerText = uniqueProgressCount;
         }
 
-        function openFeedback() {
-            document.getElementById('feedback-modal').style.display = 'flex';
-        }
-
+        function openFeedback() { document.getElementById('feedback-modal').style.display = 'flex'; }
         function closeFeedback() {
             document.getElementById('feedback-modal').style.display = 'none';
             document.getElementById('feedback-text').value = '';
@@ -729,66 +749,29 @@
         async function submitFeedback() {
             const text = document.getElementById('feedback-text').value.trim();
             if (!text) return;
-
             const btn = document.getElementById('submit-feedback-btn');
-            btn.innerText = "提交中...";
-            btn.disabled = true;
-
+            btn.innerText = "提交中..."; btn.disabled = true;
             if (!discordWebhookUrl) {
-                console.log("Feedback content:", text);
                 setTimeout(() => {
                     btn.innerText = "提交成功";
-                    setTimeout(() => {
-                        closeFeedback();
-                        btn.innerText = "提交反馈";
-                        btn.disabled = false;
-                    }, 1000);
+                    setTimeout(() => { closeFeedback(); btn.innerText = "提交反馈"; btn.disabled = false; }, 1000);
                 }, 800);
                 return;
             }
-
             try {
                 const response = await fetch(discordWebhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        embeds: [{
-                            title: "新意见反馈",
-                            description: text,
-                            color: 16344139,
-                            timestamp: new Date().toISOString()
-                        }]
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ embeds: [{ title: "新意见反馈", description: text, color: 16344139, timestamp: new Date().toISOString() }] })
                 });
-
                 if (response.ok) {
                     btn.innerText = "提交成功";
-                    setTimeout(() => {
-                        closeFeedback();
-                        btn.innerText = "提交反馈";
-                        btn.disabled = false;
-                    }, 1000);
-                } else {
-                    throw new Error();
-                }
+                    setTimeout(() => { closeFeedback(); btn.innerText = "提交反馈"; btn.disabled = false; }, 1000);
+                } else throw new Error();
             } catch (err) {
-                btn.innerText = "提交失败";
-                btn.style.background = "#999";
-                setTimeout(() => {
-                    btn.innerText = "提交反馈";
-                    btn.style.background = "var(--primary)";
-                    btn.disabled = false;
-                }, 2000);
+                btn.innerText = "提交失败"; btn.style.background = "#999";
+                setTimeout(() => { btn.innerText = "提交反馈"; btn.style.background = "var(--primary)"; btn.disabled = false; }, 2000);
             }
         }
-
-        // Listen for resize events (like iPad rotation) to recalculate paging
-        window.addEventListener('resize', () => {
-            if (document.getElementById('reader-page').style.display === 'block' && readMode === 'paging') {
-                calcPaging();
-                applyPaging();
-            }
-        });
     </script>
 </body>
 </html>
