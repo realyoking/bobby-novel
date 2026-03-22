@@ -467,16 +467,25 @@
 
             const processed = b.chapters[idx].c.split('\n').filter(l => l.trim()).map(l => `<p>${l.trim()}</p>`).join('');
             document.getElementById('reader-title').innerText = b.name;
-            document.getElementById('reader-flow').innerHTML = `<h2>${b.chapters[idx].t}</h2><div class="reader-content-inner">${processed}</div><div id="reader-end-tag">— 本章完 —</div>`;
+            const flow = document.getElementById('reader-flow');
+            flow.innerHTML = `<h2>${b.chapters[idx].t}</h2><div class="reader-content-inner">${processed}</div><div id="reader-end-tag">— 本章完 —</div>`;
             
             renderTOC();
             
+            // Critical Fix for Page Number Detection:
+            // We use a small timeout to ensure the browser has rendered the new content
+            // before calculating the scrollWidth/innerWidth ratio.
             setTimeout(() => {
                 if(readMode === 'paging') {
                     calcPaging();
                     if (savedData && savedData.page !== undefined) currentPagingIdx = savedData.page;
                     else if(goToLast) currentPagingIdx = totalPages - 1;
                     else currentPagingIdx = 0;
+                    
+                    // Boundary check
+                    if (currentPagingIdx >= totalPages) currentPagingIdx = totalPages - 1;
+                    if (currentPagingIdx < 0) currentPagingIdx = 0;
+                    
                     applyPaging();
                 } else {
                     const view = document.getElementById('reader-scroll-view');
@@ -486,7 +495,7 @@
                     updateReaderProgress();
                 }
                 showHint(b.chapters[idx].t);
-            }, 100);
+            }, 150);
         }
 
         function renderTOC() {
@@ -501,11 +510,19 @@
 
         function calcPaging() {
             const flow = document.getElementById('reader-flow');
+            // Temporarily disable transitions for immediate measurement
+            const originalTransition = flow.style.transition;
             flow.style.transition = 'none';
-            flow.style.transform = 'none';
-            totalPages = Math.ceil(flow.scrollWidth / window.innerWidth);
+            
+            // Force measurement by reading a property
+            const scrollW = flow.scrollWidth;
+            const winW = window.innerWidth;
+            
+            totalPages = Math.ceil(scrollW / winW);
             if (totalPages < 1) totalPages = 1;
-            setTimeout(() => flow.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)', 50);
+            
+            // Restore transitions
+            setTimeout(() => flow.style.transition = originalTransition || 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)', 50);
         }
 
         function applyPaging() {
@@ -536,6 +553,7 @@
         function updateReaderProgress() {
             const el = document.getElementById('reader-progress');
             if(readMode === 'paging') {
+                // Ensure page numbers update accurately
                 el.innerText = `${currentPagingIdx + 1} / ${totalPages}`;
             } else {
                 const v = document.getElementById('reader-scroll-view');
@@ -581,6 +599,7 @@
 
         function setReadMode(mode) {
             applyReadMode(mode);
+            // Refresh current chapter to recalculate paging/scrolling layout
             loadCh(currentCh); 
         }
 
@@ -607,7 +626,6 @@
             const totalSec = Object.values(bookTimers).reduce((a, b) => a + b, 0);
             document.getElementById('total-read-time').innerText = Math.floor(totalSec / 60);
             
-            // Fixed logic for reading books count: Only count unique IDs that have saved progress
             const uniqueProgressCount = Object.keys(bookProgress).length;
             document.getElementById('books-count').innerText = uniqueProgressCount;
         }
@@ -676,6 +694,14 @@
                 }, 2000);
             }
         }
+
+        // Listen for resize events (like iPad rotation) to recalculate paging
+        window.addEventListener('resize', () => {
+            if (document.getElementById('reader-page').style.display === 'block' && readMode === 'paging') {
+                calcPaging();
+                applyPaging();
+            }
+        });
     </script>
 </body>
 </html>
