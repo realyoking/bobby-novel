@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>波比小说 - 尽享品质阅读</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #F9644B; 
+            --primary-light: #ffedea;
+            --bg-home: #FFF9ED; 
+            --bg-reader: #FDF6E3;
+            --text-main: #2C2C2C;
+            --text-mute: #A09581;
+            --card-bg: #FFFFFF;
+            --nav-bg: rgba(255, 249, 237, 0.92);
+            --border-color: #E8E2D5;
+            --shadow: 0 8px 20px rgba(0,0,0,0.04);
+            --reader-text: #2C2C2C;
+        }
+
+        [data-theme="dark"] {
+            --bg-home: #121212;
+            --bg-reader: #1A1917;
+            --text-main: #E0E0E0;
+            --text-mute: #757575;
+            --card-bg: #1E1E1E;
+            --nav-bg: rgba(18, 18, 18, 0.92);
+            --border-color: #2C2C2C;
+            --reader-text: #D6D2C9;
+            --primary-light: #2c1a17;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            height: 100%; width: 100%; overflow: hidden; background: var(--bg-home);
+            font-family: "PingFang SC", "STHeiti", "Microsoft YaHei", sans-serif;
+            color: var(--text-main);
+            transition: background 0.4s ease;
+        }
+
+        /* Layout */
+        #app-content { height: calc(100% - 75px); overflow-y: auto; padding-bottom: 20px; scroll-behavior: smooth; }
+        .page { display: none; padding: 20px 20px; max-width: 650px; margin: 0 auto; opacity: 0; transform: translateY(10px); }
+        .page.active { display: block; animation: pageIn 0.5s forwards cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+        @keyframes pageIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* Splash Screen */
+        #splash-screen { 
+            position: fixed; inset: 0; background: #FFF9ED; z-index: 9999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            transition: opacity 0.6s ease;
+        }
+        .splash-icon {
+            background: var(--primary); padding: 28px; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(249, 100, 75, 0.3);
+            animation: pulse 2.5s infinite ease-in-out;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        /* Modern UI Components */
+        .search-area { position: sticky; top: 0; background: var(--bg-home); z-index: 100; padding: 10px 0 20px; }
+        .search-bar { display: flex; align-items: center; background: var(--card-bg); padding: 14px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow); transition: 0.3s; }
+        .search-bar:focus-within { border-color: var(--primary); transform: translateY(-2px); }
+        .search-bar input { border: none; background: transparent; outline: none; flex: 1; margin-left: 12px; font-size: 15px; color: var(--text-main); }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border-color); text-align: center; }
+        .stat-val { font-size: 22px; font-weight: 900; color: var(--primary); display: block; }
+        .stat-label { font-size: 12px; color: var(--text-mute); margin-top: 4px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--nav-bg); backdrop-filter: blur(20px); display: flex; border-top: 1px solid var(--border-color); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--text-mute); cursor: pointer; transition: 0.3s; position: relative; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active::after { content: ''; position: absolute; top: 12px; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; }
+        .nav-item i { margin-bottom: 6px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-item.active i { transform: translateY(-2px) scale(1.1); }
+
+        .book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 10px; }
+        .book-card { cursor: pointer; width: 100%; transition: transform 0.2s; }
+        .book-card:active { transform: scale(0.96); }
+        .book-cover-container { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 10px; background: #eee; }
+        .book-cover { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .book-title { font-size: 13px; font-weight: 700; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text-main); }
+
+        /* Profile V4 */
+        .me-header-v4 { display: flex; align-items: center; gap: 20px; margin: 10px 0 30px; }
+        .me-avatar-wrap { position: relative; }
+        .me-avatar-v4 { width: 80px; height: 80px; border-radius: 24px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        /* Reader Engine */
+        #reader-page { position: fixed; inset: 0; background: var(--bg-reader); z-index: 2000; display: none; color: var(--reader-text); }
+        #reader-scroll-view { width: 100vw; height: 100vh; position: relative; overflow-x: hidden; }
+        
+        #reader-page.mode-paging #reader-flow { 
+            height: 100vh; column-width: 100vw; column-gap: 0; padding: 80px 0 80px 0;
+            box-sizing: border-box; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+        }
+
+        #reader-page.mode-scroll #reader-flow { 
+            height: auto; column-width: auto; padding: 100px 24px 120px 24px;
+        }
+
+        .reader-content-inner { padding: 0 24px; line-height: 2.0; font-size: 18px; text-align: justify; }
+        .reader-content-inner p { margin-bottom: 1.5em; text-indent: 2em; }
+        .reader-text-body h2 { margin: 0 24px 30px 24px; font-size: 1.6em; font-weight: 900; color: inherit; }
+        #reader-end-tag { padding: 60px 24px; text-align: center; color: var(--text-mute); font-size: 14px; letter-spacing: 2px; }
+
+        /* Reader UI */
+        .reader-ui { position: fixed; width: 100%; background: var(--nav-bg); backdrop-filter: blur(25px); z-index: 2200; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reader-header { top: 0; height: 70px; display: flex; align-items: center; padding: 0 20px; transform: translateY(-100%); border-bottom: 1px solid var(--border-color); padding-top: env(safe-area-inset-top); }
+        .reader-footer { bottom: 0; padding: 15px 0 calc(15px + env(safe-area-inset-bottom)); transform: translateY(100%); border-top: 1px solid var(--border-color); }
+        .reader-ui.active { transform: translateY(0); }
+
+        #reader-tap-zone { position: fixed; inset: 0; z-index: 2100; display: flex; }
+        .tap-side { width: 20%; height: 100%; cursor: pointer; }
+        .tap-middle { flex: 1; height: 100%; cursor: pointer; }
+
+        /* Overlays */
+        .overlay { position: fixed; bottom: 0; width: 100%; height: 0; background: var(--nav-bg); z-index: 2300; transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 30px 30px 0 0; overflow: hidden; box-shadow: 0 -20px 40px rgba(0,0,0,0.1); }
+        .overlay.active { height: 70%; }
+        .overlay-header { padding: 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 18px; }
+
+        .setting-row { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .bg-dot { width: 38px; height: 38px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .bg-dot.active { border-color: var(--primary); transform: scale(1.1); }
+
+        .mode-btn { padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px; background: var(--card-bg); color: var(--text-mute); font-weight: 600; cursor: pointer; }
+        .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #page-hint { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 20px; font-size: 12px; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3000; font-weight: bold; }
+        
+        /* Switch */
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ddd; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+    </style>
+</head>
+<body class="mode-paging">
+
+    <div id="splash-screen">
+        <div class="splash-icon"><i data-lucide="book-open-check" color="white" size="44"></i></div>
+        <h1 style="color: var(--primary); margin-top: 30px; letter-spacing: 6px; font-weight: 900;">波比小说</h1>
+        <div style="width: 40px; height: 3px; background: var(--primary); margin-top: 15px; border-radius: 2px;"></div>
+    </div>
+
+    <div id="page-hint"></div>
+
+    <div id="app-content">
+        <!-- Store Tab -->
+        <div id="tab-books" class="page active">
+            <div class="search-area">
+                <div class="search-bar">
+                    <i data-lucide="search" size="20" color="var(--text-mute)"></i>
+                    <input type="text" placeholder="发现下一本好书..." oninput="handleSearch(this.value)">
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 20px; font-weight: 900;">热门精选</h2>
+                <span style="font-size: 13px; color: var(--primary); font-weight: 600;">查看全部 <i data-lucide="chevron-right" size="14" style="display:inline; vertical-align:middle"></i></span>
+            </div>
+            <div id="store-grid" class="book-grid"></div>
+        </div>
+
+        <!-- Shelf Tab -->
+        <div id="tab-shelf" class="page">
+            <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="font-size: 24px; font-weight: 900;">我的书架</h2>
+                <i data-lucide="more-horizontal" color="var(--text-mute)"></i>
+            </div>
+            <div id="shelf-grid" class="book-grid"></div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="tab-me" class="page">
+            <div class="me-header-v4">
+                <div class="me-avatar-wrap">
+                    <img src="https://i.pinimg.com/236x/13/74/20/137420f5b9c39bc911e472f5d20f053e.jpg" class="me-avatar-v4">
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 900; font-size: 1.4rem;">敬请期待</div>
+                    <div style="color: var(--text-mute); font-size: 13px; margin-top: 4px;">书山有路勤为径</div>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <span class="stat-val" id="books-count">0</span>
+                    <span class="stat-label">在读书籍</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val" id="total-read-time">0</span>
+                    <span class="stat-label">阅读时长(分)</span>
+                </div>
+            </div>
+
+            <div style="font-weight: 800; font-size: 16px; margin-bottom: 15px; padding-left: 5px;">应用设置</div>
+            <div class="me-list" style="display:flex; flex-direction:column; gap:12px;">
+                <div class="me-item" style="display:flex; align-items:center; gap:15px; padding:18px; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color);">
+                    <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="moon" color="var(--primary)" size="20"></i>
+                    </div>
+                    <span style="font-weight:600;">深色模式</span>
+                    <label class="switch" style="margin-left:auto;">
+                        <input type="checkbox" id="dark-toggle" onchange="toggleDarkMode(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="me-item" style="display:flex; align-items:center; gap:15px; padding:18px; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color);">
+                    <div style="width:36px; height:36px; border-radius:10px; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="trash-2" color="#666" size="20"></i>
+                    </div>
+                    <span style="font-weight:600;">清理缓存</span>
+                    <i data-lucide="chevron-right" size="18" style="margin-left:auto; color:var(--text-mute)"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="navTo('books', this)"><i data-lucide="layout-grid"></i><span>书城</span></div>
+        <div class="nav-item" onclick="navTo('shelf', this)"><i data-lucide="book-marked"></i><span>书架</span></div>
+        <div class="nav-item" onclick="navTo('me', this)"><i data-lucide="user-round"></i><span>我的</span></div>
+    </nav>
+
+    <!-- Detail View -->
+    <div id="book-detail" style="position:fixed; inset:0; background:var(--bg-home); z-index:1500; display:none; flex-direction:column; transform:translateX(100%); transition:transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); padding-top: env(safe-area-inset-top);">
+        <div style="padding: 15px 20px; display: flex; justify-content: space-between; flex-shrink: 0;">
+            <i data-lucide="chevron-left" size="30" onclick="closeDetail()" style="cursor:pointer; color:var(--text-main)"></i>
+            <i data-lucide="share-2" size="24" color="var(--text-mute)"></i>
+        </div>
+        
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+            <div style="padding: 10px 25px 30px; display:flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0;">
+                <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); object-fit:cover; margin-bottom: 20px;">
+                <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:8px; color:var(--text-main)"></h2>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+                    <img id="det-author-pfp" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
+                    <p id="det-author" style="color:var(--text-mute); font-size:14px; margin:0; font-weight: 600;"></p>
+                </div>
+                <div style="background: var(--primary-light); padding: 6px 15px; border-radius: 20px; color: var(--primary); font-weight: bold; font-size: 12px;">
+                    <i data-lucide="timer" size="14" style="display:inline; vertical-align:middle; margin-right: 4px;"></i> 正在读: <span id="cur-timer">00:00</span>
+                </div>
+            </div>
+
+            <div id="det-desc" style="padding:25px; line-height:1.8; color:var(--text-main); font-size: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); flex: 1; white-space: pre-wrap;"></div>
+        </div>
+
+        <div style="padding:20px 25px calc(20px + env(safe-area-inset-bottom)); display:flex; gap:15px; background:var(--nav-bg); border-top:1px solid var(--border-color); flex-shrink: 0;">
+            <button id="shelf-btn" style="flex:1; padding:18px; border-radius:18px; border:2px solid var(--primary); background:transparent; color:var(--primary); font-weight:900; font-size: 15px;" onclick="toggleShelf()">加入书架</button>
+            <button style="flex:2; padding:18px; border-radius:18px; border:none; background:var(--primary); color:white; font-weight:900; font-size: 15px; box-shadow: 0 10px 20px rgba(249, 100, 75, 0.2);" onclick="openReader()">继续阅读</button>
+        </div>
+    </div>
+
+    <!-- Reader Page -->
+    <div id="reader-page" class="mode-paging">
+        <div id="reader-tap-zone">
+            <div class="tap-side" onclick="handleTap('prev')"></div>
+            <div class="tap-middle" onclick="toggleReaderUI()"></div>
+            <div class="tap-side" onclick="handleTap('next')"></div>
+        </div>
+
+        <div class="reader-ui reader-header">
+            <i data-lucide="chevron-left" size="30" onclick="closeReader()" style="cursor:pointer"></i>
+            <span id="reader-title" style="margin-left:15px; font-weight:900; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size: 18px;"></span>
+            <i data-lucide="bookmark" size="24"></i>
+        </div>
+
+        <div id="reader-scroll-view" onscroll="onReaderScroll()">
+            <div id="reader-flow" class="reader-text-body"></div>
+        </div>
+
+        <div class="reader-ui reader-footer">
+            <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
+                <div class="nav-item" onclick="toggleOverlay('toc')"><i data-lucide="menu"></i><span>目录</span></div>
+                <div style="font-size:14px; font-weight:900; color:var(--primary); background: var(--primary-light); padding: 4px 12px; border-radius: 12px;" id="reader-progress">0%</div>
+                <div class="nav-item" onclick="toggleOverlay('set')"><i data-lucide="sliders-horizontal"></i><span>设置</span></div>
+            </div>
+        </div>
+
+        <!-- TOC Overlay -->
+        <div id="overlay-toc" class="overlay">
+            <div class="overlay-header">
+                <span>章节目录</span>
+                <i data-lucide="x" size="24" onclick="toggleOverlay('toc')"></i>
+            </div>
+            <div id="toc-container" style="overflow-y:auto; height:calc(100% - 75px); padding-bottom: 40px;"></div>
+        </div>
+
+        <!-- Settings Overlay -->
+        <div id="overlay-set" class="overlay">
+            <div class="overlay-header">
+                <span>个性化设置</span>
+                <i data-lucide="x" size="24" onclick="toggleOverlay('set')"></i>
+            </div>
+            <div class="setting-row">
+                <span>阅读翻页</span>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-mode-paging" class="mode-btn active" onclick="setReadMode('paging')">仿真</button>
+                    <button id="btn-mode-scroll" class="mode-btn" onclick="setReadMode('scroll')">滚动</button>
+                </div>
+            </div>
+            <div class="setting-row">
+                <span>护眼背景</span>
+                <div class="bg-options" style="display:flex; gap:12px;">
+                    <div class="bg-dot active" style="background:#FDF6E3;" onclick="setReaderBg('#FDF6E3', '#2C2C2C', this)"></div>
+                    <div class="bg-dot" style="background:#E6F3E6;" onclick="setReaderBg('#E6F3E6', '#2C2C2C', this)"></div>
+                    <div class="bg-dot" style="background:#E3EDF7;" onclick="setReaderBg('#E3EDF7', '#2C2C2C', this)"></div>
+                    <div class="bg-dot" style="background:#1A1917;" onclick="setReaderBg('#1A1917', '#D6D2C9', this)"></div>
+                </div>
+            </div>
+            <div class="setting-row">
+                <span>字体大小</span>
+                <div style="display:flex; gap:20px; align-items:center;">
+                    <button style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:12px; background:var(--card-bg); color:var(--text-main); font-size: 20px;" onclick="adjFont(-2)">-</button>
+                    <span id="font-val" style="font-weight:900; font-size: 18px;">18</span>
+                    <button style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:12px; background:var(--card-bg); color:var(--text-main); font-size: 20px;" onclick="adjFont(2)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * TIPS FOR MAKING BOOK CONTENT:
+         * 1. Use backticks `` for content to write multiple lines easily.
+         * 2. No need to add <p> tags, the app will auto-wrap lines into paragraphs.
+         * 3. Use \n\n to create a new paragraph.
+         */
+        const BOOKS_DATA = {
+            "b1": { 
+                name: "剑神波比", author: "代码诗人", 
+                authorPfp: "https://picsum.photos/100/100?random=51",
+                cover: "https://picsum.photos/300/400?random=11", 
+                desc: `自幼便被视为废物的波比，在一场意外中觉醒了代码之魂。从此，他以笔为剑，斩尽天下Bug。
+
+「这个世界的底层逻辑，由我重新定义！」`, 
+                chapters: [
+                    {
+                        t: "第一章 觉醒", 
+                        c: `这是一个万物皆可被编译的世界。
+
+波比站在破旧的测试室中央，面前是一块闪烁着红光的控制台。他的双手颤抖，体内的脉络像是有一串串代码在奔腾。
+
+“又是报错……难道我注定无法通过初级编译？”他咬紧牙关，再次将手按在感应石上。
+
+突然，一股深蓝色的光芒穿透了测试室维度。那不是普通的语法，那是……传说中的 zero Bug 底色！
+
+周围的考官们惊愕得合不拢嘴，“这，这是神级的异常捕获机制？这小子觉醒了传说中的‘剑神格式化’！”
+
+从此，波比的命运彻底改写。`
+                    },
+                    {
+                        t: "第二章 逆袭", 
+                        c: `波比的成名速度快得像是一段没有延迟的脚本。
+
+在青云榜比试中，他面对的是号称‘死循环’的王雷。王雷的招式狠辣，一旦沾染便无法脱身，如同深陷无限循环。
+
+波比冷笑一声，拔出腰间的‘编译器之刃’。
+
+“Break.”
+
+仅仅一个词，王雷的所有攻势瞬间土崩瓦解，整个人像是因为内存溢出而瘫痪在地。
+
+全场死寂，这一刻，所有人都知道，剑神波比——回来了。`
+                    }
+                ] 
+            },
+            "b2": { 
+                name: "代码至尊", author: "加班狂人", 
+                authorPfp: "https://picsum.photos/100/100?random=52",
+                cover: "https://picsum.photos/300/400?random=12", 
+                desc: "在这个以代码强弱划分等级的世界，波比是唯一掌握了零 Bug 秘籍的男人。", 
+                chapters: [
+                    {
+                        t: "第一章 祭坛", 
+                        c: `云端之巅，代码祭坛正散发着古老的数据波动。
+
+各大门派的掌门齐聚于此，都在等待那个传言中能解开‘终极算法’的少年。
+
+波比穿着一件已经洗得发白的灰色连帽衫，慢条斯理地走上台。
+
+“这种低效的排序方式，也敢称为终极？”他随手在空中划出一道复杂的符文。
+
+祭坛在震颤，整片大陆的系统都在这一刻发生了强制更新。`
+                    }
+                ] 
+            },
+            "b3": { 
+                name: "深夜食堂", author: "美食家", 
+                authorPfp: "https://picsum.photos/100/100?random=53",
+                cover: "https://picsum.photos/300/400?random=13", 
+                desc: "一间只在深夜营业的食堂，波比老板用代码烹饪灵魂。", 
+                chapters: [
+                    {
+                        t: "第一章 开业", 
+                        c: `当时针指向十二点，偏僻小巷里的那盏红灯笼就会亮起。
+
+食堂老板波比推开木门，系上围裙。他的灶台上没有火焰，只有跃动的数据流。
+
+“一份‘解忧面’。”一位满面愁容的职员坐了下来。
+
+食客吃下一口，积压三年的焦虑竟在瞬间被精准释放。
+
+“老板，这不是面，这是救赎。”
+
+波比微微一笑，低头继续敲打他的‘虚拟锅底’。`
+                    }
+                ] 
+            }
+        };
+
+        let shelf = JSON.parse(localStorage.getItem('bobi_shelf_v4') || '[]');
+        let progress = JSON.parse(localStorage.getItem('bobi_progress_v4') || '{}');
+        let totalMinutes = parseInt(localStorage.getItem('bobi_total_time') || '0');
+        let currentId = null, curSeconds = 0, timer = null, currentCh = 0;
+        let currentReaderPage = 0, totalReaderPages = 1;
+        let readMode = localStorage.getItem('bobi_read_mode') || 'paging';
+
+        window.onload = () => {
+            lucide.createIcons();
+            renderList(Object.keys(BOOKS_DATA));
+            renderShelf();
+            updateStats();
+            initTheme();
+            applyReadMode(readMode);
+            
+            window.addEventListener('resize', () => {
+                if(document.getElementById('reader-page').style.display === 'block' && readMode === 'paging') {
+                    calcTotalPages();
+                    if(currentReaderPage >= totalReaderPages) currentReaderPage = Math.max(0, totalReaderPages - 1);
+                    renderPage();
+                }
+            });
+        };
+
+        function renderList(ids) {
+            const grid = document.getElementById('store-grid');
+            grid.innerHTML = ids.map(id => `
+                <div class="book-card" onclick="openDetail('${id}')">
+                    <div class="book-cover-container">
+                        <img class="book-cover" src="${BOOKS_DATA[id].cover}" loading="lazy">
+                    </div>
+                    <div class="book-title">${BOOKS_DATA[id].name}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderShelf() {
+            const grid = document.getElementById('shelf-grid');
+            grid.innerHTML = shelf.length ? shelf.map(id => `
+                <div class="book-card" onclick="openDetail('${id}')">
+                    <div class="book-cover-container">
+                        <img class="book-cover" src="${BOOKS_DATA[id].cover}">
+                    </div>
+                    <div class="book-title">${BOOKS_DATA[id].name}</div>
+                </div>
+            `).join('') : '<div style="grid-column:1/4; text-align:center; padding:100px 0; color:var(--text-mute); font-size:14px;">书架空空如也，快去书城看看吧</div>';
+        }
+
+        function handleSearch(val) {
+            const results = Object.keys(BOOKS_DATA).filter(id => 
+                BOOKS_DATA[id].name.toLowerCase().includes(val.toLowerCase()) || 
+                BOOKS_DATA[id].author.toLowerCase().includes(val.toLowerCase())
+            );
+            renderList(results);
+        }
+
+        function navTo(tab, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            el.classList.add('active');
+            lucide.createIcons();
+        }
+
+        function openDetail(id) {
+            currentId = id; const b = BOOKS_DATA[id];
+            document.getElementById('det-cover').src = b.cover;
+            document.getElementById('det-title').innerText = b.name;
+            document.getElementById('det-author').innerText = b.author;
+            document.getElementById('det-author-pfp').src = b.authorPfp;
+            document.getElementById('det-desc').innerText = b.desc;
+            document.getElementById('shelf-btn').innerText = shelf.includes(id) ? '移出书架' : '加入书架';
+            
+            curSeconds = 0; clearInterval(timer);
+            timer = setInterval(() => {
+                curSeconds++;
+                const m = Math.floor(curSeconds/60).toString().padStart(2,'0');
+                const s = (curSeconds%60).toString().padStart(2,'0');
+                document.getElementById('cur-timer').innerText = `${m}:${s}`;
+                if(curSeconds % 60 === 0) {
+                    totalMinutes++;
+                    localStorage.setItem('bobi_total_time', totalMinutes);
+                    updateStats();
+                }
+            }, 1000);
+
+            const d = document.getElementById('book-detail');
+            d.style.display = 'flex';
+            setTimeout(() => d.style.transform = 'translateX(0)', 10);
+            lucide.createIcons();
+        }
+
+        function closeDetail() {
+            clearInterval(timer);
+            const d = document.getElementById('book-detail');
+            d.style.transform = 'translateX(100%)';
+            setTimeout(() => d.style.display = 'none', 500);
+        }
+
+        function toggleShelf() {
+            if(shelf.includes(currentId)) shelf = shelf.filter(i => i !== currentId);
+            else shelf.push(currentId);
+            localStorage.setItem('bobi_shelf_v4', JSON.stringify(shelf));
+            document.getElementById('shelf-btn').innerText = shelf.includes(currentId) ? '移出书架' : '加入书架';
+            renderShelf();
+            updateStats();
+        }
+
+        function openReader() {
+            const startCh = progress[currentId] || 0;
+            loadCh(startCh);
+            document.getElementById('reader-page').style.display = 'block';
+            lucide.createIcons();
+        }
+
+        function loadCh(idx, goToLast = false) {
+            const b = BOOKS_DATA[currentId];
+            if(idx < 0 || idx >= b.chapters.length) return;
+            
+            currentCh = idx;
+            progress[currentId] = idx;
+            localStorage.setItem('bobi_progress_v4', JSON.stringify(progress));
+
+            // Improved Content Processing:
+            // Splits by newline and wraps each line in a <p> tag for better styling
+            const processedContent = b.chapters[idx].c
+                .split('\n')
+                .filter(line => line.trim().length > 0)
+                .map(line => `<p>${line.trim()}</p>`)
+                .join('');
+
+            document.getElementById('reader-title').innerText = b.name;
+            document.getElementById('reader-flow').innerHTML = `
+                <h2>${b.chapters[idx].t}</h2>
+                <div class="reader-content-inner">${processedContent}</div>
+                <div id="reader-end-tag">— 本章完 —</div>
+            `;
+            
+            document.getElementById('toc-container').innerHTML = b.chapters.map((ch, i) => `
+                <div style="padding:22px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; ${i===idx?'color:var(--primary); font-weight:900; background:var(--primary-light);':''}" onclick="loadCh(${i}); toggleOverlay('toc');">
+                    <span>${ch.t}</span>
+                    ${i < idx ? '<i data-lucide="check" size="16"></i>' : ''}
+                </div>
+            `).join('');
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                if(readMode === 'paging') {
+                    calcTotalPages();
+                    currentReaderPage = goToLast ? Math.max(0, totalReaderPages - 1) : 0;
+                    renderPage();
+                } else {
+                    const scrollContainer = document.getElementById('reader-scroll-view');
+                    scrollContainer.scrollTop = goToLast ? scrollContainer.scrollHeight : 0;
+                    updateProgress();
+                }
+                showHint(b.chapters[idx].t);
+            }, 60);
+        }
+
+        function calcTotalPages() {
+            const flow = document.getElementById('reader-flow');
+            flow.style.transition = 'none';
+            flow.style.transform = 'none';
+            totalReaderPages = Math.ceil(flow.scrollWidth / window.innerWidth);
+            if (totalReaderPages < 1) totalReaderPages = 1;
+            setTimeout(() => flow.style.transition = 'transform 0.4s cubic-bezier(0.2, 0, 0.2, 1)', 10);
+        }
+
+        function renderPage() {
+            document.getElementById('reader-flow').style.transform = `translateX(-${currentReaderPage * window.innerWidth}px)`;
+            updateProgress();
+        }
+
+        function handleTap(direction) {
+            if(readMode === 'paging') {
+                if(direction === 'prev') prevPage();
+                else nextPage();
+            } else {
+                const scrollContainer = document.getElementById('reader-scroll-view');
+                const step = window.innerHeight * 0.7;
+                scrollContainer.scrollBy({ top: direction === 'prev' ? -step : step, behavior: 'smooth' });
+            }
+        }
+
+        function prevPage() {
+            if (currentReaderPage > 0) { currentReaderPage--; renderPage(); }
+            else if (currentCh > 0) loadCh(currentCh - 1, true);
+            else showHint("已到封面");
+        }
+
+        function nextPage() {
+            if (currentReaderPage < totalReaderPages - 1) { currentReaderPage++; renderPage(); }
+            else if (currentCh < BOOKS_DATA[currentId].chapters.length - 1) loadCh(currentCh + 1);
+            else showHint("全书完结");
+        }
+
+        function onReaderScroll() { if(readMode === 'scroll') updateProgress(); }
+
+        function updateProgress() {
+            let p = 0;
+            if(readMode === 'paging') {
+                p = totalReaderPages > 1 ? Math.round((currentReaderPage / (totalReaderPages - 1)) * 100) : (currentReaderPage === 0 ? 0 : 100);
+            } else {
+                const reader = document.getElementById('reader-scroll-view');
+                const total = reader.scrollHeight - reader.clientHeight;
+                p = total > 0 ? Math.round((reader.scrollTop / total) * 100) : 0;
+            }
+            document.getElementById('reader-progress').innerText = p + '%';
+        }
+
+        function showHint(text) {
+            const h = document.getElementById('page-hint');
+            h.innerText = text; h.style.opacity = '1';
+            setTimeout(() => h.style.opacity = '0', 1800);
+        }
+
+        function closeReader() { 
+            document.getElementById('reader-page').style.display = 'none';
+            document.querySelectorAll('.reader-ui').forEach(u => u.classList.remove('active'));
+        }
+
+        function toggleReaderUI() { document.querySelectorAll('.reader-ui').forEach(u => u.classList.toggle('active')); }
+        function toggleOverlay(id) { document.getElementById('overlay-' + id).classList.toggle('active'); }
+
+        function adjFont(d) {
+            let f = parseInt(document.getElementById('font-val').innerText) + d;
+            f = Math.max(12, Math.min(32, f));
+            document.getElementById('font-val').innerText = f;
+            document.querySelector('.reader-content-inner').style.fontSize = f + 'px';
+            if(readMode === 'paging') {
+                setTimeout(() => {
+                    calcTotalPages();
+                    if(currentReaderPage >= totalReaderPages) currentReaderPage = Math.max(0, totalReaderPages - 1);
+                    renderPage();
+                }, 100);
+            }
+        }
+
+        function setReaderBg(bgColor, textColor, el) {
+            const page = document.getElementById('reader-page');
+            page.style.background = bgColor;
+            page.style.color = textColor;
+            document.querySelectorAll('.bg-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function applyReadMode(mode) {
+            readMode = mode;
+            document.getElementById('reader-page').className = 'mode-' + mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-mode-' + mode).classList.add('active');
+            localStorage.setItem('btn-mode-' + mode, mode);
+            if(mode === 'scroll') document.getElementById('reader-flow').style.transform = 'none';
+        }
+
+        function setReadMode(mode) { applyReadMode(mode); loadCh(currentCh); }
+
+        function toggleDarkMode(isDark) {
+            const t = isDark ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('bobi_theme_v4', t);
+        }
+
+        function initTheme() {
+            const t = localStorage.getItem('bobi_theme_v4') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            if(document.getElementById('dark-toggle')) document.getElementById('dark-toggle').checked = (t === 'dark');
+        }
+
+        function updateStats() { 
+            if(document.getElementById('total-read-time')) document.getElementById('total-read-time').innerText = totalMinutes; 
+            if(document.getElementById('books-count')) document.getElementById('books-count').innerText = shelf.length;
+        }
+
+        setTimeout(() => {
+            const s = document.getElementById('splash-screen');
+            if(s) s.style.opacity = '0', setTimeout(() => s.style.visibility = 'hidden', 600);
+        }, 2200);
+    </script>
+</body>
+</html>
