@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>波比小说 - 尽享品质阅读</title>
+    
+    <link rel="apple-touch-icon" href="https://i.ibb.co/sdYKDmWK/IMG-8552.png">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/sdYKDmWK/IMG-8552.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="波比小说">
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
@@ -41,27 +47,26 @@
             transition: background 0.4s ease;
         }
 
-        /* Layout */
-        #app-content { height: calc(100% - 75px); overflow-y: auto; padding-bottom: 20px; scroll-behavior: smooth; }
+        #app-content { height: calc(100% - 75px); overflow-y: auto; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
         .page { display: none; padding: 20px 20px; max-width: 650px; margin: 0 auto; opacity: 0; transform: translateY(10px); }
         .page.active { display: block; animation: pageIn 0.5s forwards cubic-bezier(0.2, 0.8, 0.2, 1); }
 
         @keyframes pageIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* Splash Screen */
         #splash-screen { 
             position: fixed; inset: 0; background: #FFF9ED; z-index: 9999; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
             transition: opacity 0.6s ease;
         }
         .splash-icon {
-            background: var(--primary); padding: 28px; border-radius: 30px;
+            width: 120px; height: 120px; border-radius: 40px; overflow: hidden;
             box-shadow: 0 15px 35px rgba(249, 100, 75, 0.3);
             animation: pulse 2.5s infinite ease-in-out;
+            background: white; display: flex; align-items: center; justify-content: center;
         }
+        .splash-icon img { width: 100%; height: 100%; object-fit: cover; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
-        /* Modern UI Components */
         .search-area { position: sticky; top: 0; background: var(--bg-home); z-index: 100; padding: 10px 0 20px; }
         .search-bar { display: flex; align-items: center; background: var(--card-bg); padding: 14px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow); transition: 0.3s; }
         .search-bar:focus-within { border-color: var(--primary); transform: translateY(-2px); }
@@ -83,30 +88,38 @@
         .book-card { cursor: pointer; width: 100%; transition: transform 0.2s; }
         .book-card:active { transform: scale(0.96); }
         .book-cover-container { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 10px; background: #eee; }
-        .book-cover { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .book-cover { width: 100%; height: 100%; object-fit: cover; }
         .book-title { font-size: 13px; font-weight: 700; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text-main); }
 
-        /* Profile V4 */
         .me-header-v4 { display: flex; align-items: center; gap: 20px; margin: 10px 0 30px; }
-        .me-avatar-wrap { position: relative; }
         .me-avatar-v4 { width: 80px; height: 80px; border-radius: 24px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 
         /* Reader Engine */
         #reader-page { position: fixed; inset: 0; background: var(--bg-reader); z-index: 2000; display: none; color: var(--reader-text); }
-        #reader-scroll-view { width: 100vw; height: 100vh; position: relative; overflow-x: hidden; }
+        #reader-scroll-view { width: 100vw; height: 100vh; position: relative; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
         
+        #reader-page.mode-paging #reader-scroll-view { overflow-y: hidden; touch-action: none; }
+        #reader-page.mode-scroll #reader-scroll-view { overflow-y: auto; touch-action: pan-y; }
+
         #reader-page.mode-paging #reader-flow { 
-            height: 100vh; column-width: 100vw; column-gap: 0; padding: 80px 0 80px 0;
-            box-sizing: border-box; transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+            height: 100vh; 
+            column-width: 100vw; 
+            column-gap: 0; 
+            padding: 0;
+            box-sizing: border-box; 
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         #reader-page.mode-scroll #reader-flow { 
-            height: auto; column-width: auto; padding: 100px 24px 120px 24px;
+            height: auto; 
+            column-width: auto; 
+            padding: 100px 24px 120px 24px;
         }
 
-        .reader-content-inner { padding: 0 24px; line-height: 2.0; font-size: 18px; text-align: justify; }
+        .reader-content-inner { padding: 80px 24px; line-height: 2.0; font-size: 18px; text-align: justify; }
+        #reader-page.mode-scroll .reader-content-inner { padding: 0; }
         .reader-content-inner p { margin-bottom: 1.5em; text-indent: 2em; }
-        .reader-text-body h2 { margin: 0 24px 30px 24px; font-size: 1.6em; font-weight: 900; color: inherit; }
+        .reader-text-body h2 { padding: 0 24px; font-size: 1.6em; font-weight: 900; color: inherit; margin-bottom: 20px; }
         #reader-end-tag { padding: 60px 24px; text-align: center; color: var(--text-mute); font-size: 14px; letter-spacing: 2px; }
 
         /* Reader UI */
@@ -115,17 +128,18 @@
         .reader-footer { bottom: 0; padding: 15px 0 calc(15px + env(safe-area-inset-bottom)); transform: translateY(100%); border-top: 1px solid var(--border-color); }
         .reader-ui.active { transform: translateY(0); }
 
-        #reader-tap-zone { position: fixed; inset: 0; z-index: 2100; display: flex; }
-        .tap-side { width: 20%; height: 100%; cursor: pointer; }
+        #reader-tap-zone { position: fixed; inset: 0; z-index: 2100; display: flex; pointer-events: none; }
+        #reader-tap-zone .tap-side, #reader-tap-zone .tap-middle { pointer-events: auto; }
+        .tap-side { width: 25%; height: 100%; cursor: pointer; }
         .tap-middle { flex: 1; height: 100%; cursor: pointer; }
 
         /* Overlays */
-        .overlay { position: fixed; bottom: 0; width: 100%; height: 0; background: var(--nav-bg); z-index: 2300; transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 30px 30px 0 0; overflow: hidden; box-shadow: 0 -20px 40px rgba(0,0,0,0.1); }
+        .overlay { position: fixed; bottom: 0; width: 100%; height: 0; background: var(--nav-bg); z-index: 2300; transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 30px 30px 0 0; overflow: hidden; }
         .overlay.active { height: 70%; }
         .overlay-header { padding: 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 18px; }
 
         .setting-row { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-        .bg-dot { width: 38px; height: 38px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .bg-dot { width: 38px; height: 38px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
         .bg-dot.active { border-color: var(--primary); transform: scale(1.1); }
 
         .mode-btn { padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px; background: var(--card-bg); color: var(--text-mute); font-weight: 600; cursor: pointer; }
@@ -133,68 +147,55 @@
 
         #page-hint { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 20px; font-size: 12px; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 3000; font-weight: bold; }
         
-        /* Switch */
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ddd; transition: .4s; border-radius: 26px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        /* Scrollbar */
+        .feedback-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .feedback-content { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 24px; padding: 25px; }
+        .feedback-textarea { width: 100%; height: 150px; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-home); padding: 15px; font-size: 15px; color: var(--text-main); outline: none; resize: none; margin: 15px 0; }
+
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
     </style>
 </head>
 <body class="mode-paging">
 
     <div id="splash-screen">
-        <div class="splash-icon"><i data-lucide="book-open-check" color="white" size="44"></i></div>
+        <div class="splash-icon"><img src="https://i.ibb.co/sdYKDmWK/IMG-8552.png"></div>
         <h1 style="color: var(--primary); margin-top: 30px; letter-spacing: 6px; font-weight: 900;">波比小说</h1>
-        <div style="width: 40px; height: 3px; background: var(--primary); margin-top: 15px; border-radius: 2px;"></div>
     </div>
 
     <div id="page-hint"></div>
 
     <div id="app-content">
-        <!-- Store Tab -->
         <div id="tab-books" class="page active">
             <div class="search-area">
                 <div class="search-bar">
                     <i data-lucide="search" size="20" color="var(--text-mute)"></i>
-                    <input type="text" placeholder="发现下一本好书..." oninput="handleSearch(this.value)">
+                    <input type="text" placeholder="搜索书名或作者..." oninput="handleSearch(this.value)">
                 </div>
             </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 20px; font-weight: 900;">热门精选</h2>
-                <span style="font-size: 13px; color: var(--primary); font-weight: 600;">查看全部 <i data-lucide="chevron-right" size="14" style="display:inline; vertical-align:middle"></i></span>
-            </div>
+            <h2 style="font-size: 20px; font-weight: 900; margin-bottom: 20px;">热门精选</h2>
             <div id="store-grid" class="book-grid"></div>
         </div>
 
-        <!-- Shelf Tab -->
         <div id="tab-shelf" class="page">
-            <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-                <h2 style="font-size: 24px; font-weight: 900;">我的书架</h2>
-                <i data-lucide="more-horizontal" color="var(--text-mute)"></i>
-            </div>
+            <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 25px;">我的书架</h2>
             <div id="shelf-grid" class="book-grid"></div>
         </div>
 
-        <!-- Profile Tab -->
         <div id="tab-me" class="page">
             <div class="me-header-v4">
-                <div class="me-avatar-wrap">
-                    <img src="https://i.pinimg.com/236x/13/74/20/137420f5b9c39bc911e472f5d20f053e.jpg" class="me-avatar-v4">
-                </div>
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bobi" class="me-avatar-v4">
                 <div style="flex: 1;">
-                    <div style="font-weight: 900; font-size: 1.4rem;">敬请期待</div>
-                    <div style="color: var(--text-mute); font-size: 13px; margin-top: 4px;">点击链接获取免费波比</div>
+                    <div style="font-weight: 900; font-size: 1.4rem;">波比用户</div>
+                    <div style="color: var(--text-mute); font-size: 13px;">书山有路勤为径</div>
                 </div>
             </div>
-
             <div class="stat-grid">
                 <div class="stat-card">
                     <span class="stat-val" id="books-count">0</span>
@@ -205,291 +206,148 @@
                     <span class="stat-label">阅读时长(分)</span>
                 </div>
             </div>
-
-            <div style="font-weight: 800; font-size: 16px; margin-bottom: 15px; padding-left: 5px;">应用设置</div>
             <div class="me-list" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="me-item" style="display:flex; align-items:center; gap:15px; padding:18px; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color);">
-                    <div style="width:36px; height:36px; border-radius:10px; background:var(--primary-light); display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="moon" color="var(--primary)" size="20"></i>
-                    </div>
+                    <i data-lucide="moon" color="var(--primary)" size="20"></i>
                     <span style="font-weight:600;">深色模式</span>
                     <label class="switch" style="margin-left:auto;">
                         <input type="checkbox" id="dark-toggle" onchange="toggleDarkMode(this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="me-item" style="display:flex; align-items:center; gap:15px; padding:18px; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color);">
-                    <div style="width:36px; height:36px; border-radius:10px; background:#f0f0f0; display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="trash-2" color="#666" size="20"></i>
-                    </div>
-                    <span style="font-weight:600;">清理缓存</span>
-                    <i data-lucide="chevron-right" size="18" style="margin-left:auto; color:var(--text-mute)"></i>
+                <div class="me-item" onclick="openFeedback()" style="display:flex; align-items:center; gap:15px; padding:18px; background:var(--card-bg); border-radius:18px; border:1px solid var(--border-color); cursor:pointer;">
+                    <i data-lucide="message-square" color="var(--primary)" size="20"></i>
+                    <span style="font-weight:600;">意见反馈</span>
+                    <i data-lucide="chevron-right" size="18" color="var(--text-mute)" style="margin-left:auto;"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="navTo('books', this)"><i data-lucide="layout-grid"></i><span>书城</span></div>
         <div class="nav-item" onclick="navTo('shelf', this)"><i data-lucide="book-marked"></i><span>书架</span></div>
         <div class="nav-item" onclick="navTo('me', this)"><i data-lucide="user-round"></i><span>我的</span></div>
     </nav>
 
-    <!-- Detail View -->
     <div id="book-detail" style="position:fixed; inset:0; background:var(--bg-home); z-index:1500; display:none; flex-direction:column; transform:translateX(100%); transition:transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); padding-top: env(safe-area-inset-top);">
-        <div style="padding: 15px 20px; display: flex; justify-content: space-between; flex-shrink: 0;">
-            <i data-lucide="chevron-left" size="30" onclick="closeDetail()" style="cursor:pointer; color:var(--text-main)"></i>
-            <i data-lucide="share-2" size="24" color="var(--text-mute)"></i>
-        </div>
-        
-        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
-            <div style="padding: 10px 25px 30px; display:flex; flex-direction: column; align-items: center; text-align: center; flex-shrink: 0;">
-                <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); object-fit:cover; margin-bottom: 20px;">
-                <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:8px; color:var(--text-main)"></h2>
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
-                    <img id="det-author-pfp" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
-                    <p id="det-author" style="color:var(--text-mute); font-size:14px; margin:0; font-weight: 600;"></p>
-                </div>
-                <div style="background: var(--primary-light); padding: 6px 15px; border-radius: 20px; color: var(--primary); font-weight: bold; font-size: 12px;">
-                    <i data-lucide="timer" size="14" style="display:inline; vertical-align:middle; margin-right: 4px;"></i> 正在读: <span id="cur-timer">00:00</span>
-                </div>
+        <div style="padding: 15px 20px;"><i data-lucide="chevron-left" size="30" onclick="closeDetail()" style="cursor:pointer"></i></div>
+        <div style="flex: 1; overflow-y: auto; text-align: center; -webkit-overflow-scrolling: touch;">
+            <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); margin-bottom: 20px;">
+            <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:8px;"></h2>
+            <p id="det-author" style="color:var(--text-mute); font-size:14px; margin-bottom:15px;"></p>
+            <div style="background: var(--primary-light); display:inline-block; padding: 6px 15px; border-radius: 20px; color: var(--primary); font-weight: bold; font-size: 12px;">
+                <i data-lucide="timer" size="14" style="vertical-align:middle;"></i> <span id="cur-timer">00:00:00</span>
             </div>
-
-            <div id="det-desc" style="padding:25px; line-height:1.8; color:var(--text-main); font-size: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); flex: 1; white-space: pre-wrap;"></div>
+            <div id="det-desc" style="padding:25px; text-align:left; line-height:1.8; border-top: 1px solid var(--border-color); margin-top:30px; background: var(--card-bg);"></div>
         </div>
-
-        <div style="padding:20px 25px calc(20px + env(safe-area-inset-bottom)); display:flex; gap:15px; background:var(--nav-bg); border-top:1px solid var(--border-color); flex-shrink: 0;">
-            <button id="shelf-btn" style="flex:1; padding:18px; border-radius:18px; border:2px solid var(--primary); background:transparent; color:var(--primary); font-weight:900; font-size: 15px;" onclick="toggleShelf()">加入书架</button>
-            <button style="flex:2; padding:18px; border-radius:18px; border:none; background:var(--primary); color:white; font-weight:900; font-size: 15px; box-shadow: 0 10px 20px rgba(249, 100, 75, 0.2);" onclick="openReader()">继续阅读</button>
+        <div style="padding:20px 25px calc(20px + env(safe-area-inset-bottom)); display:flex; gap:15px; background:var(--nav-bg); border-top:1px solid var(--border-color);">
+            <button id="shelf-btn" style="flex:1; padding:18px; border-radius:18px; border:2px solid var(--primary); background:transparent; color:var(--primary); font-weight:900;" onclick="toggleShelf()">加入书架</button>
+            <button style="flex:2; padding:18px; border-radius:18px; border:none; background:var(--primary); color:white; font-weight:900;" onclick="openReader()">继续阅读</button>
         </div>
     </div>
 
     <!-- Reader Page -->
-    <div id="reader-page" class="mode-paging">
+    <div id="reader-page">
         <div id="reader-tap-zone">
-            <div class="tap-side" onclick="handleTap('prev')"></div>
+            <div class="tap-side" onclick="handleReaderTap('prev')"></div>
             <div class="tap-middle" onclick="toggleReaderUI()"></div>
-            <div class="tap-side" onclick="handleTap('next')"></div>
+            <div class="tap-side" onclick="handleReaderTap('next')"></div>
         </div>
-
         <div class="reader-ui reader-header">
             <i data-lucide="chevron-left" size="30" onclick="closeReader()" style="cursor:pointer"></i>
-            <span id="reader-title" style="margin-left:15px; font-weight:900; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size: 18px;"></span>
-            <i data-lucide="bookmark" size="24"></i>
+            <span id="reader-title" style="margin-left:15px; font-weight:900; flex:1;"></span>
         </div>
-
         <div id="reader-scroll-view" onscroll="onReaderScroll()">
             <div id="reader-flow" class="reader-text-body"></div>
         </div>
-
         <div class="reader-ui reader-footer">
             <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
                 <div class="nav-item" onclick="toggleOverlay('toc')"><i data-lucide="menu"></i><span>目录</span></div>
-                <div style="font-size:14px; font-weight:900; color:var(--primary); background: var(--primary-light); padding: 4px 12px; border-radius: 12px;" id="reader-progress">0%</div>
+                <div id="reader-progress" style="font-size:14px; font-weight:900; color:var(--primary); background: var(--primary-light); padding: 4px 12px; border-radius: 12px;">0%</div>
                 <div class="nav-item" onclick="toggleOverlay('set')"><i data-lucide="sliders-horizontal"></i><span>设置</span></div>
             </div>
         </div>
-
-        <!-- TOC Overlay -->
         <div id="overlay-toc" class="overlay">
-            <div class="overlay-header">
-                <span>章节目录</span>
-                <i data-lucide="x" size="24" onclick="toggleOverlay('toc')"></i>
-            </div>
-            <div id="toc-container" style="overflow-y:auto; height:calc(100% - 75px); padding-bottom: 40px;"></div>
+            <div class="overlay-header"><span>章节目录</span><i data-lucide="x" size="24" onclick="toggleOverlay('toc')"></i></div>
+            <div id="toc-container" style="overflow-y:auto; height:calc(100% - 75px); -webkit-overflow-scrolling: touch;"></div>
         </div>
-
-        <!-- Settings Overlay -->
         <div id="overlay-set" class="overlay">
-            <div class="overlay-header">
-                <span>个性化设置</span>
-                <i data-lucide="x" size="24" onclick="toggleOverlay('set')"></i>
-            </div>
+            <div class="overlay-header"><span>设置</span><i data-lucide="x" size="24" onclick="toggleOverlay('set')"></i></div>
             <div class="setting-row">
                 <span>阅读翻页</span>
                 <div style="display:flex; gap:10px;">
-                    <button id="btn-mode-paging" class="mode-btn active" onclick="setReadMode('paging')">仿真</button>
+                    <button id="btn-mode-paging" class="mode-btn" onclick="setReadMode('paging')">仿真</button>
                     <button id="btn-mode-scroll" class="mode-btn" onclick="setReadMode('scroll')">滚动</button>
                 </div>
             </div>
             <div class="setting-row">
                 <span>护眼背景</span>
-                <div class="bg-options" style="display:flex; gap:12px;">
-                    <div class="bg-dot active" style="background:#FDF6E3;" onclick="setReaderBg('#FDF6E3', '#2C2C2C', this)"></div>
+                <div style="display:flex; gap:12px;">
+                    <div class="bg-dot" style="background:#FDF6E3;" onclick="setReaderBg('#FDF6E3', '#2C2C2C', this)"></div>
                     <div class="bg-dot" style="background:#E6F3E6;" onclick="setReaderBg('#E6F3E6', '#2C2C2C', this)"></div>
-                    <div class="bg-dot" style="background:#E3EDF7;" onclick="setReaderBg('#E3EDF7', '#2C2C2C', this)"></div>
                     <div class="bg-dot" style="background:#1A1917;" onclick="setReaderBg('#1A1917', '#D6D2C9', this)"></div>
-                </div>
-            </div>
-            <div class="setting-row">
-                <span>字体大小</span>
-                <div style="display:flex; gap:20px; align-items:center;">
-                    <button style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:12px; background:var(--card-bg); color:var(--text-main); font-size: 20px;" onclick="adjFont(-2)">-</button>
-                    <span id="font-val" style="font-weight:900; font-size: 18px;">18</span>
-                    <button style="width:40px; height:40px; border:1px solid var(--border-color); border-radius:12px; background:var(--card-bg); color:var(--text-main); font-size: 20px;" onclick="adjFont(2)">+</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="feedback-modal">
+        <div class="feedback-content">
+            <h3 style="font-weight:900;">意见反馈</h3>
+            <p style="font-size:13px; color:var(--text-mute); margin-top:5px;">您的建议是我们前进的动力</p>
+            <textarea id="feedback-text" class="feedback-textarea" placeholder="请在这里输入您的反馈内容..."></textarea>
+            <div style="display:flex; gap:12px;">
+                <button style="flex:1; padding:12px; border-radius:12px; border:1px solid var(--border-color); background:transparent; font-weight:600;" onclick="closeFeedback()">取消</button>
+                <button id="submit-feedback-btn" style="flex:2; padding:12px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:900;" onclick="submitFeedback()">提交反馈</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        /**
-         * TIPS FOR MAKING BOOK CONTENT:
-         * 1. Use backticks `` for content to write multiple lines easily.
-         * 2. No need to add <p> tags, the app will auto-wrap lines into paragraphs.
-         * 3. Use \n\n to create a new paragraph.
-         */
+        // Replace with your actual Discord Webhook URL
+        const discordWebhookUrl = "";
+
         const BOOKS_DATA = {
             "b1": { 
-                name: "我重生了，前一世我是正常男生被人欺负，这一世我决定成为男娘", author: "波比没有迪克", 
-                authorPfp: "data:image/jpeg;base64,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",
-                cover: "https://i.postimg.cc/KYPfLY8s/7A54EF52-CFDA-4062-8D0C-D5C2B47BBDBB.png", 
-                desc: `No desc`, 
+                name: "剑神波比", author: "代码诗人", 
+                cover: "https://images.unsplash.com/photo-1543004404-4ef3c7f52ecd?q=80&w=300&h=400&auto=format&fit=crop", 
+                desc: `自幼便被视为废物的波比，在一场意外中觉醒了代码之魂。从此，他以笔为剑，斩尽天下Bug。\n\n「这个世界的底层逻辑，由我重新定义！」`, 
                 chapters: [
-                    {
-                        t: "重生15岁，我魏家明上课玩王者也要变IHMC最靓男娘！yyds冲冲冲！", 
-                        c: `我猛地从床上弹起来，冷汗狂飙，心脏砰砰乱跳像刚打完王者被队友喷退。
-卧槽！我回来了？！
-低头一看：熟悉到想吐的旧校服，床头堆满乱七八糟的课本，还有学校配的那部旧iPad——手機禁帶，只能用這玩意兒上課。MDM管得超嚴，遊戲App全被封鎖，連王者都下載不了，前世我只能偷偷刷點YouTube或看教學影片，連遊戲都玩不了幾次。
-絕了！真的重生回中二了！而且我現在15歲，還留級一年……
-我衝到鏡子前，盯著這張蒼白瘦弱、滿臉痘+黑眼圈的臉，腦子裡瞬間閃過前世那三十年的爛攤子。
-前世，我就是聖恩慈心書院2MK班最抽象的廢物。全班只有32人，小班制，老師盯得死死的，iPad MDM限制遊戲、App下載，表面用來上課筆記，實際我只能偷偷刷片。坐最前面、最靠門的位子（老師一眼掃到，門一開關就被同學看到，社死位置），黃英澤坐在最後排最右邊的角落，帶頭的那群人欺負了我整整三年：偷我iPad藏起來、當眾踹我椅子、把我的書包扔廁所、公開嘲諷“你用iPad刷片干脆退學吧！拖低全班平均分，害我們內卷升大學無望！”。女生把我當空氣，從來沒人搭理我一句。畢業後我直接人間蒸發，三十歲還跟媽擠出租屋，天天用舊iPad刷片都覺得自己是人生贏家，最後猝死在螢幕前的那一刻，我才明白——我這輩子，活得像個透明沙包，死了都沒人記得。
-“這一世……我絕對要改變！”我握緊拳頭，內心燃起希望，“我要認真學習！每天好好聽課！努力讀書！交幾個正常朋友！再也不當廢物了！做個普普通通的男生就行！”
-我深吸一口氣，正準備規劃新的人生路線——
-腦子裡突然響起一道甜得發膩、帶點娘娘腔的軟萌少女音（femboy風）：
-【哎呀呀～宿主魏家明，人家是最靓男娘養成系統哦～強制綁定成功啦～拒絕無效喵～】
-我整個人僵住，差點把鏡子砸了。
-系統？！還用這種聲音？！什麼鬼？！
-【宿主前世太慘了嘛～人家特地為你量身定制唯一逆襲路線：成為全校最靓、最可愛、最讓人記住的男娘！其他路線全部封鎖，認真學習？交友？努力讀書？統統無效！只有男娘路線才能獲得獎勵～人家還會幫你unblock iPad的MDM，讓你偷偷玩遊戲哦～但聲音要用人家這種可愛femboy音輔助，嘻嘻～】
-我差點吐血，在心裡狂吼：“我不要當男娘！我要認真學習！系統你滾啊！還逼我玩遊戲？！”
-【拒絕無效喵～宿主若不接受，人家會扣除全部壽命+隨機社死懲罰×10哦～來，先把粉色蝴蝶結髮夾戴上～這是強制任務啦～】
-我：……
-臥槽，這系統也太變態了吧？！明明我想認真學習，它卻強制我當男娘，還用femboy聲音逼我玩遊戲？！
-【叮！新手禮包已強制發放！】
-【獲得：粉色蝴蝶結髮夾*1（可愛度+5，佩戴後強制+10%社死抗性）】
-【獲得：經驗值+200】
-【當前面板：】
-【顏值：38/100（抽象藝術級別）】
-【可愛度：5/100（純純社恐沙包）】
-【社死抗性：10/100（一碰就炸）】
-【王者段位：青銅III（擺爛象徵）】
-【iPad MDM狀態：已強制unblock遊戲限制（僅限王者+指定男娘相關App，系統魔法加持，暫時不被老師發現）】
-【主線任務強制開啟：成為聖恩慈心書院全校公認的最靓男娘】
-【階段1：顏值≥60，可愛度≥40（獎勵：初級化妝包+社死抗性+20）】
-【警告：宿主若24小時內不開始男娘行動+玩遊戲，將觸發懲罰：全校強制直播前世黑歷史×1】
-我看著空氣中突然出現的粉色蝴蝶結髮夾，整個人都傻了。
-“系統……我真想認真學習啊，我只想正常一點……”
-【宿主別emo啦～前世你認真了三十年，結果呢？人家會用可愛femboy音陪你玩遊戲、肝男娘的～來，先戴上髮夾～嘻嘻～】
-我咬牙切齒，但想到前世黃英澤那群人的嘲笑、那三十年的透明人生……最終還是顫抖著手把粉色蝴蝶結偷偷夾在劉海後面。
-【叮！佩戴成功！可愛度+5，社死抗性+10！當前可愛度：10/100】
-瞬間，我感覺臉沒那麼燙了，但內心還是崩潰：
-“系統你這個變態……我明明想認真學習，卻被你逼著當男娘+玩遊戲……”
-【日常任務已強制刷新！】
-【任務1：上課偷偷用iPad刷男娘教程≥30分鐘（獎勵：經驗+50，可愛度+3）】
-【任務2：穿絲襪/收窄褲腳上學一整天（獎勵：腿部曲線+5%，可愛度+5）】
-【任務3：用iPad玩王者一場（用人家femboy音輔助語音聊天，嘻嘻～獎勵：經驗+100）】
-【宿主請盡快執行，否則懲罰啟動喵～】
-我無奈嘆氣，偷偷把校褲褲腳用別針收窄，又偷了媽一條舊肉色絲襪剪開當打底褲穿。
-“行行行……我做總行了吧？但我還是不想當男娘啊！更不想玩遊戲！”
-出門前，我對著鏡子低聲罵了一句：
-“魏家明，這一世明明想認真學習，卻被系統逼成男娘+玩遊戲……yyds個頭啊！衝……衝個鬼！”
-坐巴士去沙田乙明邨，一路都在心裡跟系統吵架，但它用femboy音甜甜回：
-【宿主加油喵～男娘之路，肝就完事兒了！人家會幫你unblock MDM，讓你偷偷玩王者～前世被黃英澤那群人欺負得那麼慘，這一世就用可愛值+遊戲卷死他們！】
-到校門口，一位巡堂老師瞄了我一眼，皺眉道：
-“同學，校服怎麼穿得這麼奇怪？褲腳收這麼窄，腿上那是……絲襪？回去換！”
-我臉瞬間紅了，系統卻歡快提示：
-【叮！任務2進度+1，腿部曲線+5%，可愛度+5！當前可愛度：15/100】
-我低頭小跑進校，內心崩潰：連老師都注意到了……這系統逼我太狠了！
-衝上樓梯，2MK班門口（全班32人，小班制，老師一眼就能掃到前排門邊的我）。
-推門進去，我習慣性地坐回最前面、最靠門的那個位子。全班32雙眼睛刷刷掃過來——但沒人說話，大家只是看兩秒就繼續低頭玩iPad或聊天，像看空氣一樣。
-黃英澤坐在最後排最右邊的角落，從那個死角傳來一聲低低的嘲笑：
-“魏家明，你今天怎麼回事？穿這麼騷？腿毛還透絲襪出來，惡心死了。”
-他聲音不大，但小班制+教室安靜，全班都聽見了，有人偷笑，有人直接無視。我坐在前排門邊，感覺全班的目光像針一樣扎過來，卻沒人幫腔。
-我臉燒起來，但系統及時響起（femboy音）：
-【嘲諷值+1，經驗+10！被動“越嘲越靓”已開啟喵～宿主請繼續保持！】
-我灰溜溜低頭，內心崩潰卻又燃起一絲火：
-“系統……你贏了。我明明想認真學習，卻被你逼著當男娘+玩遊戲……但前世我已經被欺負夠了，這一世，就算被逼的，我也一定要肝成最靓的那個！”
-上課鈴響。
-老師講英文，我照舊把iPad藏在書下面——但這次不是刷片，而是被迫打開YouTube搜“男娘化妝入門”。
-【叮！日常任務1觸發：刷男娘教程進行中……】
-黃英澤從最後排右邊角落扔了個紙團，正好砸在我後腦勺：
-“廢物！上課還玩iPad？信不信我告訴老師？”
-系統立刻（femboy音）：
-【嘲諷值+1，經驗+10！繼續肝喵～人家已經unblock MDM，你可以偷偷玩王者了哦～】
-我握緊拳頭，內心狂吼：
-“系統你這個強迫狂……我不想當男娘+玩遊戲，但我會肝！因為前世我已經輸夠了！”
-放學後，系統又跳出新提示（femboy音）：
-【任務3強制啟動：現在用iPad玩王者一場！人家會用可愛聲音陪你語音聊天～】
-我嘆了口氣，走向廁所（找隱蔽地方）……
-殊不知，黃英澤那群人已經在走廊等著了……`
-                    },
-                    {
-                        t: "第二章 逆袭", 
-                        c: `波比的成名速度快得像是一段没有延迟的脚本。
-
-在青云榜比试中，他面对的是号称‘死循环’的王雷。王雷的招式狠辣，一旦沾染便无法脱身，如同深陷无限循环。
-
-波比冷笑一声，拔出腰间的‘编译器之刃’。
-
-“Break.”
-
-仅仅一个词，王雷的所有攻势瞬间土崩瓦解，整个人像是因为内存溢出而瘫痪在地。
-
-全场死寂，这一刻，所有人都知道，剑神波比——回来了。`
-                    }
+                    {t: "第一章 觉醒", c: `这是一个万物皆可被编译的世界...\n波比站在破旧的测试室中央，周围充满了蓝色的数据流。他的掌心微微发烫，一个闪烁的字符在皮肤下跃动。\n\n「初始化完成。」一个冰冷的系统音在他脑海中响起。\n\n在这个世界，普通人只能调用基础函数，而波比发现自己竟然能直接修改内核。这意味着，他可以改变重力，可以改写物体的密度，甚至可以删除他人的存在感。\n\n「Bug...我看见了Bug。」他凝视着面前傲慢的考官，嘴角露出一丝冷笑。在他眼里，这位不可一世的考官浑身都是破绽。`},
+                    {t: "第二章 逆袭", c: `消息传得飞快。那个测试废柴竟然一招击败了考官！\n\n「不可能，他只是个没背景的底层代码员。」\n\n然而，当波比步入演武场时，所有的质疑都化为了寂静。他没有带剑，只是伸出手指在虚空中轻轻一点。\n\n「Delete.」\n\n瞬间，对手手中厚重的盾牌化为了漫天飞舞的光点。观众席上传来阵阵惊呼，那是从未见过的神迹。波比依然面无表情，他知道，这仅仅是个开始。在这个充满冗余和逻辑错误的世界，他要当那个唯一的管理员。`}
                 ] 
             },
             "b2": { 
                 name: "代码至尊", author: "加班狂人", 
-                authorPfp: "https://picsum.photos/100/100?random=52",
-                cover: "https://picsum.photos/300/400?random=12", 
+                cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300&h=400&auto=format&fit=crop", 
                 desc: "在这个以代码强弱划分等级的世界，波比是唯一掌握了零 Bug 秘籍的男人。", 
-                chapters: [
-                    {
-                        t: "第一章 祭坛", 
-                        c: `云端之巅，代码祭坛正散发着古老的数据波动。
-
-各大门派的掌门齐聚于此，都在等待那个传言中能解开‘终极算法’的少年。
-
-波比穿着一件已经洗得发白的灰色连帽衫，慢条斯理地走上台。
-
-“这种低效的排序方式，也敢称为终极？”他随手在空中划出一道复杂的符文。
-
-祭坛在震颤，整片大陆的系统都在这一刻发生了强制更新。`
-                    }
-                ] 
+                chapters: [{t: "第一章 祭坛", c: `云端之巅，代码祭坛正散发着古老的数据波动...\n传说中，只有最纯粹的灵魂才能触碰那段禁忌的源代码。波比一步一步踏上阶梯，脚下的玉石台阶感应到了他的频率，发出悦耳的共鸣声。`}] 
             },
             "b3": { 
                 name: "深夜食堂", author: "美食家", 
-                authorPfp: "https://picsum.photos/100/100?random=53",
-                cover: "https://picsum.photos/300/400?random=13", 
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&h=400&auto=format&fit=crop", 
                 desc: "一间只在深夜营业的食堂，波比老板用代码烹饪灵魂。", 
-                chapters: [
-                    {
-                        t: "第一章 开业", 
-                        c: `当时针指向十二点，偏僻小巷里的那盏红灯笼就会亮起。
-
-食堂老板波比推开木门，系上围裙。他的灶台上没有火焰，只有跃动的数据流。
-
-“一份‘解忧面’。”一位满面愁容的职员坐了下来。
-
-食客吃下一口，积压三年的焦虑竟在瞬间被精准释放。
-
-“老板，这不是面，这是救赎。”
-
-波比微微一笑，低头继续敲打他的‘虚拟锅底’。`
-                    }
-                ] 
+                chapters: [{t: "第一章 开业", c: `当时针指向十二点，偏僻小巷里的那盏红灯笼就会亮起...\n这里的菜谱没有名字，只有一段段温暖的数据指令。第一位客人推门而入，带着一身的疲惫和雨水的冰凉。`}] 
             }
         };
 
-        let shelf = JSON.parse(localStorage.getItem('bobi_shelf_v4') || '[]');
-        let progress = JSON.parse(localStorage.getItem('bobi_progress_v4') || '{}');
-        let totalMinutes = parseInt(localStorage.getItem('bobi_total_time') || '0');
-        let currentId = null, curSeconds = 0, timer = null, currentCh = 0;
-        let currentReaderPage = 0, totalReaderPages = 1;
-        let readMode = localStorage.getItem('bobi_read_mode') || 'paging';
+        const STORAGE = {
+            SHELF: 'bobi_shelf_v5',
+            PROGRESS: 'bobi_progress_v5', 
+            TIMERS: 'bobi_timers_v5',
+            MODE: 'bobi_read_mode_v5',
+            THEME: 'bobi_theme_v5'
+        };
+
+        let shelf = JSON.parse(localStorage.getItem(STORAGE.SHELF) || '[]');
+        let bookProgress = JSON.parse(localStorage.getItem(STORAGE.PROGRESS) || '{}');
+        let bookTimers = JSON.parse(localStorage.getItem(STORAGE.TIMERS) || '{}');
+        let readMode = localStorage.getItem(STORAGE.MODE) || 'paging';
+        
+        let currentId = null, timerInterval = null, currentCh = 0;
+        let currentPagingIdx = 0, totalPages = 1;
 
         window.onload = () => {
             lucide.createIcons();
@@ -499,22 +357,18 @@
             initTheme();
             applyReadMode(readMode);
             
-            window.addEventListener('resize', () => {
-                if(document.getElementById('reader-page').style.display === 'block' && readMode === 'paging') {
-                    calcTotalPages();
-                    if(currentReaderPage >= totalReaderPages) currentReaderPage = Math.max(0, totalReaderPages - 1);
-                    renderPage();
-                }
-            });
+            setTimeout(() => {
+                const s = document.getElementById('splash-screen');
+                s.style.opacity = '0';
+                setTimeout(() => s.style.display = 'none', 600);
+            }, 1000);
         };
 
         function renderList(ids) {
             const grid = document.getElementById('store-grid');
             grid.innerHTML = ids.map(id => `
                 <div class="book-card" onclick="openDetail('${id}')">
-                    <div class="book-cover-container">
-                        <img class="book-cover" src="${BOOKS_DATA[id].cover}" loading="lazy">
-                    </div>
+                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}"></div>
                     <div class="book-title">${BOOKS_DATA[id].name}</div>
                 </div>
             `).join('');
@@ -524,12 +378,10 @@
             const grid = document.getElementById('shelf-grid');
             grid.innerHTML = shelf.length ? shelf.map(id => `
                 <div class="book-card" onclick="openDetail('${id}')">
-                    <div class="book-cover-container">
-                        <img class="book-cover" src="${BOOKS_DATA[id].cover}">
-                    </div>
+                    <div class="book-cover-container"><img class="book-cover" src="${BOOKS_DATA[id].cover}"></div>
                     <div class="book-title">${BOOKS_DATA[id].name}</div>
                 </div>
-            `).join('') : '<div style="grid-column:1/4; text-align:center; padding:100px 0; color:var(--text-mute); font-size:14px;">书架空空如也，快去书城看看吧</div>';
+            `).join('') : '<div style="grid-column:1/4; text-align:center; padding:100px 0; color:var(--text-mute);">空空如也</div>';
         }
 
         function handleSearch(val) {
@@ -545,6 +397,7 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             el.classList.add('active');
+            updateStats();
             lucide.createIcons();
         }
 
@@ -553,31 +406,36 @@
             document.getElementById('det-cover').src = b.cover;
             document.getElementById('det-title').innerText = b.name;
             document.getElementById('det-author').innerText = b.author;
-            document.getElementById('det-author-pfp').src = b.authorPfp;
             document.getElementById('det-desc').innerText = b.desc;
             document.getElementById('shelf-btn').innerText = shelf.includes(id) ? '移出书架' : '加入书架';
             
-            curSeconds = 0; clearInterval(timer);
-            timer = setInterval(() => {
-                curSeconds++;
-                const m = Math.floor(curSeconds/60).toString().padStart(2,'0');
-                const s = (curSeconds%60).toString().padStart(2,'0');
-                document.getElementById('cur-timer').innerText = `${m}:${s}`;
-                if(curSeconds % 60 === 0) {
-                    totalMinutes++;
-                    localStorage.setItem('bobi_total_time', totalMinutes);
-                    updateStats();
-                }
-            }, 1000);
-
+            startBookTimer(id);
             const d = document.getElementById('book-detail');
             d.style.display = 'flex';
             setTimeout(() => d.style.transform = 'translateX(0)', 10);
             lucide.createIcons();
         }
 
+        function startBookTimer(id) {
+            clearInterval(timerInterval);
+            if (!bookTimers[id]) bookTimers[id] = 0;
+            const updateUI = () => {
+                const s = bookTimers[id];
+                const h = Math.floor(s / 3600).toString().padStart(2, '0');
+                const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                const sec = (s % 60).toString().padStart(2, '0');
+                document.getElementById('cur-timer').innerText = `${h}:${m}:${sec}`;
+            };
+            updateUI();
+            timerInterval = setInterval(() => {
+                bookTimers[id]++;
+                localStorage.setItem(STORAGE.TIMERS, JSON.stringify(bookTimers));
+                updateUI();
+            }, 1000);
+        }
+
         function closeDetail() {
-            clearInterval(timer);
+            clearInterval(timerInterval);
             const d = document.getElementById('book-detail');
             d.style.transform = 'translateX(100%)';
             setTimeout(() => d.style.display = 'none', 500);
@@ -586,183 +444,238 @@
         function toggleShelf() {
             if(shelf.includes(currentId)) shelf = shelf.filter(i => i !== currentId);
             else shelf.push(currentId);
-            localStorage.setItem('bobi_shelf_v4', JSON.stringify(shelf));
+            localStorage.setItem(STORAGE.SHELF, JSON.stringify(shelf));
             document.getElementById('shelf-btn').innerText = shelf.includes(currentId) ? '移出书架' : '加入书架';
             renderShelf();
             updateStats();
         }
 
         function openReader() {
-            const startCh = progress[currentId] || 0;
-            loadCh(startCh);
+            const saved = bookProgress[currentId] || { ch: 0, page: 0, scrollY: 0 };
+            currentCh = saved.ch;
+            currentPagingIdx = saved.page;
+            
+            loadCh(currentCh, false, saved);
             document.getElementById('reader-page').style.display = 'block';
             lucide.createIcons();
         }
 
-        function loadCh(idx, goToLast = false) {
+        function loadCh(idx, goToLast = false, savedData = null) {
             const b = BOOKS_DATA[currentId];
             if(idx < 0 || idx >= b.chapters.length) return;
-            
             currentCh = idx;
-            progress[currentId] = idx;
-            localStorage.setItem('bobi_progress_v4', JSON.stringify(progress));
 
-            // Improved Content Processing:
-            // Splits by newline and wraps each line in a <p> tag for better styling
-            const processedContent = b.chapters[idx].c
-                .split('\n')
-                .filter(line => line.trim().length > 0)
-                .map(line => `<p>${line.trim()}</p>`)
-                .join('');
-
+            const processed = b.chapters[idx].c.split('\n').filter(l => l.trim()).map(l => `<p>${l.trim()}</p>`).join('');
             document.getElementById('reader-title').innerText = b.name;
-            document.getElementById('reader-flow').innerHTML = `
-                <h2>${b.chapters[idx].t}</h2>
-                <div class="reader-content-inner">${processedContent}</div>
-                <div id="reader-end-tag">— 本章完 —</div>
-            `;
+            document.getElementById('reader-flow').innerHTML = `<h2>${b.chapters[idx].t}</h2><div class="reader-content-inner">${processed}</div><div id="reader-end-tag">— 本章完 —</div>`;
             
-            document.getElementById('toc-container').innerHTML = b.chapters.map((ch, i) => `
-                <div style="padding:22px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; ${i===idx?'color:var(--primary); font-weight:900; background:var(--primary-light);':''}" onclick="loadCh(${i}); toggleOverlay('toc');">
-                    <span>${ch.t}</span>
-                    ${i < idx ? '<i data-lucide="check" size="16"></i>' : ''}
-                </div>
-            `).join('');
-            lucide.createIcons();
+            renderTOC();
             
             setTimeout(() => {
                 if(readMode === 'paging') {
-                    calcTotalPages();
-                    currentReaderPage = goToLast ? Math.max(0, totalReaderPages - 1) : 0;
-                    renderPage();
+                    calcPaging();
+                    if (savedData && savedData.page !== undefined) currentPagingIdx = savedData.page;
+                    else if(goToLast) currentPagingIdx = totalPages - 1;
+                    else currentPagingIdx = 0;
+                    applyPaging();
                 } else {
-                    const scrollContainer = document.getElementById('reader-scroll-view');
-                    scrollContainer.scrollTop = goToLast ? scrollContainer.scrollHeight : 0;
-                    updateProgress();
+                    const view = document.getElementById('reader-scroll-view');
+                    if (savedData && savedData.scrollY !== undefined) view.scrollTop = savedData.scrollY;
+                    else if(goToLast) view.scrollTop = view.scrollHeight;
+                    else view.scrollTop = 0;
+                    updateReaderProgress();
                 }
                 showHint(b.chapters[idx].t);
-            }, 60);
+            }, 100);
         }
 
-        function calcTotalPages() {
+        function renderTOC() {
+            const b = BOOKS_DATA[currentId];
+            document.getElementById('toc-container').innerHTML = b.chapters.map((ch, i) => `
+                <div style="padding:20px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; ${i===currentCh?'color:var(--primary); font-weight:900; background:var(--primary-light);':''}" onclick="loadCh(${i}); toggleOverlay('toc');">
+                    <span>${ch.t}</span>${i < currentCh ? '<i data-lucide="check" size="16"></i>' : ''}
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function calcPaging() {
             const flow = document.getElementById('reader-flow');
             flow.style.transition = 'none';
             flow.style.transform = 'none';
-            totalReaderPages = Math.ceil(flow.scrollWidth / window.innerWidth);
-            if (totalReaderPages < 1) totalReaderPages = 1;
-            setTimeout(() => flow.style.transition = 'transform 0.4s cubic-bezier(0.2, 0, 0.2, 1)', 10);
+            totalPages = Math.ceil(flow.scrollWidth / window.innerWidth);
+            if (totalPages < 1) totalPages = 1;
+            setTimeout(() => flow.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)', 50);
         }
 
-        function renderPage() {
-            document.getElementById('reader-flow').style.transform = `translateX(-${currentReaderPage * window.innerWidth}px)`;
-            updateProgress();
+        function applyPaging() {
+            document.getElementById('reader-flow').style.transform = `translateX(-${currentPagingIdx * 100}vw)`;
+            updateReaderProgress();
+            saveReaderProgress();
         }
 
-        function handleTap(direction) {
+        function handleReaderTap(dir) {
             if(readMode === 'paging') {
-                if(direction === 'prev') prevPage();
-                else nextPage();
-            } else {
-                const scrollContainer = document.getElementById('reader-scroll-view');
-                const step = window.innerHeight * 0.7;
-                scrollContainer.scrollBy({ top: direction === 'prev' ? -step : step, behavior: 'smooth' });
+                if(dir === 'prev') {
+                    if (currentPagingIdx > 0) { currentPagingIdx--; applyPaging(); }
+                    else if (currentCh > 0) loadCh(currentCh - 1, true);
+                } else {
+                    if (currentPagingIdx < totalPages - 1) { currentPagingIdx++; applyPaging(); }
+                    else if (currentCh < BOOKS_DATA[currentId].chapters.length - 1) loadCh(currentCh + 1);
+                }
             }
         }
 
-        function prevPage() {
-            if (currentReaderPage > 0) { currentReaderPage--; renderPage(); }
-            else if (currentCh > 0) loadCh(currentCh - 1, true);
-            else showHint("已到封面");
-        }
-
-        function nextPage() {
-            if (currentReaderPage < totalReaderPages - 1) { currentReaderPage++; renderPage(); }
-            else if (currentCh < BOOKS_DATA[currentId].chapters.length - 1) loadCh(currentCh + 1);
-            else showHint("全书完结");
-        }
-
-        function onReaderScroll() { if(readMode === 'scroll') updateProgress(); }
-
-        function updateProgress() {
-            let p = 0;
-            if(readMode === 'paging') {
-                p = totalReaderPages > 1 ? Math.round((currentReaderPage / (totalReaderPages - 1)) * 100) : (currentReaderPage === 0 ? 0 : 100);
-            } else {
-                const reader = document.getElementById('reader-scroll-view');
-                const total = reader.scrollHeight - reader.clientHeight;
-                p = total > 0 ? Math.round((reader.scrollTop / total) * 100) : 0;
+        function onReaderScroll() {
+            if(readMode === 'scroll') {
+                updateReaderProgress();
+                saveReaderProgress();
             }
-            document.getElementById('reader-progress').innerText = p + '%';
+        }
+
+        function updateReaderProgress() {
+            const el = document.getElementById('reader-progress');
+            if(readMode === 'paging') {
+                el.innerText = `${currentPagingIdx + 1} / ${totalPages}`;
+            } else {
+                const v = document.getElementById('reader-scroll-view');
+                const max = v.scrollHeight - v.clientHeight;
+                const pct = max > 0 ? Math.round((v.scrollTop / max) * 100) : 0;
+                el.innerText = pct + '%';
+            }
+        }
+
+        function saveReaderProgress() {
+            if(!currentId) return;
+            const view = document.getElementById('reader-scroll-view');
+            bookProgress[currentId] = {
+                ch: currentCh,
+                page: currentPagingIdx,
+                scrollY: view.scrollTop
+            };
+            localStorage.setItem(STORAGE.PROGRESS, JSON.stringify(bookProgress));
         }
 
         function showHint(text) {
             const h = document.getElementById('page-hint');
             h.innerText = text; h.style.opacity = '1';
-            setTimeout(() => h.style.opacity = '0', 1800);
+            setTimeout(() => h.style.opacity = '0', 1500);
         }
 
         function closeReader() { 
-            document.getElementById('reader-page').style.display = 'none';
+            document.getElementById('reader-page').style.display = 'none'; 
             document.querySelectorAll('.reader-ui').forEach(u => u.classList.remove('active'));
         }
 
         function toggleReaderUI() { document.querySelectorAll('.reader-ui').forEach(u => u.classList.toggle('active')); }
         function toggleOverlay(id) { document.getElementById('overlay-' + id).classList.toggle('active'); }
 
-        function adjFont(d) {
-            let f = parseInt(document.getElementById('font-val').innerText) + d;
-            f = Math.max(12, Math.min(32, f));
-            document.getElementById('font-val').innerText = f;
-            document.querySelector('.reader-content-inner').style.fontSize = f + 'px';
-            if(readMode === 'paging') {
-                setTimeout(() => {
-                    calcTotalPages();
-                    if(currentReaderPage >= totalReaderPages) currentReaderPage = Math.max(0, totalReaderPages - 1);
-                    renderPage();
-                }, 100);
-            }
+        function applyReadMode(mode) {
+            readMode = mode;
+            document.body.className = 'mode-' + mode;
+            document.getElementById('reader-page').className = 'mode-' + mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-mode-' + mode).classList.add('active');
+            localStorage.setItem(STORAGE.MODE, mode);
         }
 
-        function setReaderBg(bgColor, textColor, el) {
-            const page = document.getElementById('reader-page');
-            page.style.background = bgColor;
-            page.style.color = textColor;
+        function setReadMode(mode) {
+            applyReadMode(mode);
+            loadCh(currentCh); 
+        }
+
+        function setReaderBg(bg, text, el) {
+            const p = document.getElementById('reader-page');
+            p.style.background = bg; p.style.color = text;
             document.querySelectorAll('.bg-dot').forEach(d => d.classList.remove('active'));
             el.classList.add('active');
         }
 
-        function applyReadMode(mode) {
-            readMode = mode;
-            document.getElementById('reader-page').className = 'mode-' + mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-mode-' + mode).classList.add('active');
-            localStorage.setItem('btn-mode-' + mode, mode);
-            if(mode === 'scroll') document.getElementById('reader-flow').style.transform = 'none';
-        }
-
-        function setReadMode(mode) { applyReadMode(mode); loadCh(currentCh); }
-
-        function toggleDarkMode(isDark) {
-            const t = isDark ? 'dark' : 'light';
+        function toggleDarkMode(is) {
+            const t = is ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('bobi_theme_v4', t);
+            localStorage.setItem(STORAGE.THEME, t);
         }
 
         function initTheme() {
-            const t = localStorage.getItem('bobi_theme_v4') || 'light';
+            const t = localStorage.getItem(STORAGE.THEME) || 'light';
             document.documentElement.setAttribute('data-theme', t);
             if(document.getElementById('dark-toggle')) document.getElementById('dark-toggle').checked = (t === 'dark');
         }
 
-        function updateStats() { 
-            if(document.getElementById('total-read-time')) document.getElementById('total-read-time').innerText = totalMinutes; 
-            if(document.getElementById('books-count')) document.getElementById('books-count').innerText = shelf.length;
+        function updateStats() {
+            const totalSec = Object.values(bookTimers).reduce((a, b) => a + b, 0);
+            document.getElementById('total-read-time').innerText = Math.floor(totalSec / 60);
+            
+            // Fixed logic for reading books count: Only count unique IDs that have saved progress
+            const uniqueProgressCount = Object.keys(bookProgress).length;
+            document.getElementById('books-count').innerText = uniqueProgressCount;
         }
 
-        setTimeout(() => {
-            const s = document.getElementById('splash-screen');
-            if(s) s.style.opacity = '0', setTimeout(() => s.style.visibility = 'hidden', 600);
-        }, 2200);
+        function openFeedback() {
+            document.getElementById('feedback-modal').style.display = 'flex';
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedback-modal').style.display = 'none';
+            document.getElementById('feedback-text').value = '';
+        }
+
+        async function submitFeedback() {
+            const text = document.getElementById('feedback-text').value.trim();
+            if (!text) return;
+
+            const btn = document.getElementById('submit-feedback-btn');
+            btn.innerText = "提交中...";
+            btn.disabled = true;
+
+            if (!discordWebhookUrl) {
+                console.log("Feedback content:", text);
+                setTimeout(() => {
+                    btn.innerText = "提交成功";
+                    setTimeout(() => {
+                        closeFeedback();
+                        btn.innerText = "提交反馈";
+                        btn.disabled = false;
+                    }, 1000);
+                }, 800);
+                return;
+            }
+
+            try {
+                const response = await fetch(discordWebhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: "新意见反馈",
+                            description: text,
+                            color: 16344139,
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    btn.innerText = "提交成功";
+                    setTimeout(() => {
+                        closeFeedback();
+                        btn.innerText = "提交反馈";
+                        btn.disabled = false;
+                    }, 1000);
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                btn.innerText = "提交失败";
+                btn.style.background = "#999";
+                setTimeout(() => {
+                    btn.innerText = "提交反馈";
+                    btn.style.background = "var(--primary)";
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
     </script>
 </body>
 </html>
