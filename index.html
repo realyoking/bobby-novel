@@ -191,7 +191,7 @@
                 </div>
                 <div style="flex: 1;">
                     <div style="font-weight: 900; font-size: 1.4rem;">敬请期待</div>
-                    <div style="color: var(--text-mute); font-size: 13px; margin-top: 4px;">书山有路勤为径</div>
+                    <div style="color: var(--text-mute); font-size: 13px; margin-top: 4px;">点击链接获取免费波比</div>
                 </div>
             </div>
 
@@ -342,26 +342,94 @@
          */
         const BOOKS_DATA = {
             "b1": { 
-                name: "剑神波比", author: "代码诗人", 
-                authorPfp: "https://picsum.photos/100/100?random=51",
-                cover: "https://picsum.photos/300/400?random=11", 
-                desc: `自幼便被视为废物的波比，在一场意外中觉醒了代码之魂。从此，他以笔为剑，斩尽天下Bug。
-
-「这个世界的底层逻辑，由我重新定义！」`, 
+                name: "我重生了，前一世我是正常男生被人欺负，这一世我决定成为男娘", author: "波比没有迪克", 
+                authorPfp: "data:image/jpeg;base64,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",
+                cover: "https://ibb.co/XXfWPS9dd", 
+                desc: `No desc`, 
                 chapters: [
                     {
-                        t: "第一章 觉醒", 
-                        c: `这是一个万物皆可被编译的世界。
-
-波比站在破旧的测试室中央，面前是一块闪烁着红光的控制台。他的双手颤抖，体内的脉络像是有一串串代码在奔腾。
-
-“又是报错……难道我注定无法通过初级编译？”他咬紧牙关，再次将手按在感应石上。
-
-突然，一股深蓝色的光芒穿透了测试室维度。那不是普通的语法，那是……传说中的 zero Bug 底色！
-
-周围的考官们惊愕得合不拢嘴，“这，这是神级的异常捕获机制？这小子觉醒了传说中的‘剑神格式化’！”
-
-从此，波比的命运彻底改写。`
+                        t: "重生15岁，我魏家明上课玩王者也要变IHMC最靓男娘！yyds冲冲冲！", 
+                        c: `我猛地从床上弹起来，冷汗狂飙，心脏砰砰像在打王者五杀。
+卧槽！我回来了？！
+低头一看：熟悉到想吐的旧校服，床头一堆乱七八糟的课本，还有我那部裂屏小米老头机，锁屏还是王者青铜三的耻辱战绩截图。
+绝了！真的重生回中二了！而且我现在15岁，还留级一年，纯纯的社死现场！
+冲到镜子前，盯着这张苍白瘦弱、满脸痘+黑眼圈的脸。15岁，比同班小朋友大一岁，尴尬癌都要犯了。学校是IHMC——圣母无玷圣心书院，沙田乙明邨的天主教男女中学，全班卷王遍地，个个冲DSE5**，我永远倒一，躺平摆烂第一名。
+前世我就是2MK班最抽象的存在。上课永远低头玩王者or刷YouTube（抽象视频、王者教学、B站男娘教程），但我从来不翘课——翘一次就被老师抓包罚站抄书叫家长，社死到爆炸。所以我老老实实坐后排角落，耳机一塞，表面认真听课，实际排位五杀or刷到awsl。班霸阿强那群伪学霸真垃圾欺负我三年：偷手机、藏耳机、当众嘲“你上课玩王者干脆退学吧！拖低平均分，害我们内卷升大学无望！”女生把我当空气，毕业后直接蒸发，30岁还跟妈挤出租屋，天天王者冲钻石觉得自己是人生赢家，笑死。
+这一世……必须不一样！我要起飞！
+深吸一口气，脑子里蹦出前世B站刷烂的金句：
+“做男人已经输麻了，做男娘至少人人记住我！IHMC美女多卷王多，做最可爱的男娘，靠颜值+萌翻身，总比继续当透明沙包强！”
+对对对！就是这个！绝了！
+学习我不行，王者我冲不到王者，但变美……我可以肝啊！肝爆！上课继续玩王者刷视频，但多开一条线：男娘教程！双线程并行，yyds！
+激动到原地起飞，冲进厕所翻妈的化妆包。
+妈是典型上班族，化妆三秒速战：BB霜+口红出门。
+我拿起一支廉价BB霜，对镜子比划。
+“B站UP主教过，底妆薄薄一层才自然……该怎么涂来着？”
+挤一大坨，往脸上一糊。
+白成鬼。
+再糊一层。
+“不够白？再来！”
+结果大白脸，像京剧花旦，痘痘还被顶得更凸，纯纯抽象艺术。
+卧槽！变白无常+痘痘精了！救命！
+慌忙用水狂冲，冲到脸红肿，像被揍了一顿。
+门外妈狮吼功启动：
+“家明！你又在厕所整什么活？！快出来吃早餐！今天开学，迟到老师又投诉！上次留级已经够丢人，还想再摆烂一年？！”
+吓得BB霜瓶掉马桶里。
+“等……等下！我试新形象呢！”
+“新你个头！脸怎么肿成猪头？！快洗！”
+我灰头土脸洗完，看着镜子里的自己还是那么普通，握紧拳头。
+没事！第一天失败正常！男娘之路地狱难度！B站说了，坚持就是胜利！冲！
+偷偷把校裤裤脚用别针收窄，又偷妈一条旧肉色丝袜，剪开当打底裤穿。
+低调！先低调试水！王者从青铜肝到王者，先低调上分！
+出门前对镜子wink一下，自言自语：
+“魏家明，从今天起，你就是IHMC最靓、最可爱的‘女孩子’！上课继续玩王者，同时肝男娘！awsl冲冲冲！”
+坐巴士去沙田乙明邨，一路脑补自己化妆后全班尖叫“哇塞好可爱！”。
+到校门口，保安大叔瞄我一眼：
+“小伙子，穿这么娘？”
+？？？
+低头——靠！丝袜太薄，腿毛若隐若现，但远看还真有点女孩子味！
+内心狂喜：成功！连保安都把我当女生！第一步大胜利！蚌埠住了！
+冲上楼梯，2MK班门口。
+深呼吸，推门。
+全班四十多双眼睛刷刷射过来。
+阿强（数学卷王，欺负王）第一个笑喷：
+“魏家明！你今天怎么穿这么娘？！哈哈哈腿毛比我粗两倍！上课玩王者还想扮女？笑死我了！”
+全班笑到打滚，有人直接喷水。
+英文老师推门进来（IHMC英文课多）：
+“魏家明，你又迟到？！还穿成这样……what the hell are you doing?！”
+我深吸一口气，挤出自认为甜美无敌的笑容，声音尽量软：
+“老师、同学们……谢谢夸奖！从这一世开始，我魏家明要成为全校最靓、最可爱的‘女孩子’！以后上课我还是乖乖坐着，但不只玩王者，我还要刷男娘教程！”
+全班安静两秒，然后炸锅：
+“？？？？？？？”
+“魏家明疯了吧？！”
+“上课玩王者已经够抽象，还想变女？！”
+阿强拍桌子狂笑：“你扮女？哈哈哈，你王者青铜三，扮女也青铜三啊！蚌埠住了！”
+我脸红到爆炸，但内心燃烧：
+“笑吧！笑到最后的才是我！等我肝完妆容，学会猫步，你们全都要跪叫我‘明姐’！yyds！”
+这时，班花小晴（全班最美，女神级）突然开口，声音轻轻：
+“其实……挺有趣的呢？家明，你真的想变女生？”
+我心跳直接漏拍，脑子里烟花炸开。
+小晴……她没嘲我？！还说有趣？！awsl！
+看着小晴，我内心狂吼：
+“这一世，我一定要靠男娘路线逆袭全班！先从攻略小晴开始！上课玩王者+刷YouTube男娘视频，双线程并进！冲！”
+上课铃响。
+老师讲英文，我照旧低头，手游藏书下面。
+但这次不只打王者——偷偷打开YouTube，搜“男娘化妆入门 自然风”。
+画面跳出：可爱男生教“海绵扑扑底妆”。
+我边看边偷笑：“原来要轻拍……”
+突然阿强从后面伸手抢手机：
+“喂！又玩王者？让我看看你多惨！”
+手机一抢，屏幕正播男娘教程。
+全班又笑喷。
+阿强呆住：
+“卧槽……你不只玩王者，还看男娘视频？！你真要变女啊？！”
+我抢回手机，红着脸硬刚：
+“是啊！这一世我不止冲王者分，我还要冲靓女榜！内卷起来！”
+老师敲桌子：
+“魏家明！Put away your phone! 再玩就没收！”
+我乖乖收起，但内心：
+“没事！放学继续肝！男娘之路，yyds！”
+放学后，我决定第一步：去沙田新城市广场偷偷买化妆品。
+殊不知，厕所换装大危机即将社死……`
                     },
                     {
                         t: "第二章 逆袭", 
