@@ -120,6 +120,11 @@
             transform: none !important; 
         }
 
+        /* Reading Fonts */
+        .font-default { font-family: "PingFang SC", "STHeiti", "Microsoft YaHei", sans-serif; }
+        .font-serif { font-family: "Noto Serif SC", "Songti SC", "SimSun", "STSong", serif; }
+        .font-kaiti { font-family: "Kaiti SC", "KaiTi", "STKaiti", serif; }
+
         .chapter-container { margin-bottom: 50px; }
         .reader-content-inner { padding: 0 24px; line-height: 2.0; font-size: var(--reader-font-size); text-align: justify; transition: font-size 0.2s; }
         .reader-content-inner p { margin-bottom: 1.5em; text-indent: 2em; }
@@ -143,7 +148,7 @@
 
         /* Overlays */
         .overlay { position: fixed; bottom: 0; width: 100%; height: 0; background: var(--nav-bg); z-index: 2300; transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 30px 30px 0 0; overflow: hidden; }
-        .overlay.active { height: 70%; }
+        .overlay.active { height: 75%; }
         .overlay-header { padding: 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 18px; }
 
         .setting-row { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
@@ -169,6 +174,9 @@
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+        /* Author Profile Specific */
+        .author-tag { background: var(--primary-light); display:inline-block; padding: 4px 12px; border-radius: 20px; color: var(--primary); font-weight: 800; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     </style>
 </head>
 <body class="mode-paging">
@@ -199,10 +207,10 @@
 
         <div id="tab-me" class="page">
             <div class="me-header-v4">
-                <img src="https://i.pinimg.com/236x/13/74/20/137420f5b9c39bc911e472f5d20f053e.jpg" class="me-avatar-v4">
+                <img id="me-avatar-img" src="" class="me-avatar-v4">
                 <div style="flex: 1;">
-                    <div style="font-weight: 900; font-size: 1.4rem;">账户功能即将推出</div>
-                    <div style="color: var(--text-mute); font-size: 13px;">Free Bobux 🤑</div>
+                    <div id="me-username" style="font-weight: 900; font-size: 1.4rem;"></div>
+                    <div id="me-tagline" style="color: var(--text-mute); font-size: 13px;"></div>
                 </div>
             </div>
             <div class="stat-grid">
@@ -242,7 +250,11 @@
     <div id="book-detail" style="position:fixed; inset:0; background:var(--bg-home); z-index:1500; display:none; flex-direction:column; transform:translateX(100%); transition:transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); padding-top: env(safe-area-inset-top);">
         <div style="padding: 15px 20px;"><i data-lucide="chevron-left" size="30" onclick="closeDetail()" style="cursor:pointer"></i></div>
         <div style="flex: 1; overflow-y: auto; text-align: center; -webkit-overflow-scrolling: touch;">
-            <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); margin-bottom: 20px;">
+            
+            <img id="det-cover" style="width:140px; aspect-ratio:3/4; border-radius:15px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: block; margin: 0 auto 20px auto;">
+            
+            <div id="det-status-tag" class="author-tag" style="display: none;"></div>
+            
             <h2 id="det-title" style="font-weight:900; font-size: 24px; margin-bottom:12px;"></h2>
             
             <div style="display:flex; justify-content:center; align-items:center; gap: 8px; margin-bottom: 15px;">
@@ -274,7 +286,7 @@
         </div>
         
         <div id="reader-scroll-view" onscroll="onReaderScroll()" onclick="if(readMode === 'scroll') toggleReaderUI()">
-            <div id="reader-flow" class="reader-text-body"></div>
+            <div id="reader-flow" class="reader-text-body font-default"></div>
         </div>
         
         <div class="reader-ui reader-footer">
@@ -297,6 +309,15 @@
                     <button class="mode-btn" onclick="changeFontSize(-2)">A-</button>
                     <span id="font-size-display" style="font-weight:900; width:30px; text-align:center;">22</span>
                     <button class="mode-btn" onclick="changeFontSize(2)">A+</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span>阅读字体</span>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-font-default" class="font-btn mode-btn active" onclick="changeFont('default')">默认</button>
+                    <button id="btn-font-serif" class="font-btn mode-btn" onclick="changeFont('serif')">宋体</button>
+                    <button id="btn-font-kaiti" class="font-btn mode-btn" onclick="changeFont('kaiti')">楷体</button>
                 </div>
             </div>
 
@@ -340,40 +361,42 @@
     </div>
 
     <script>
+        // --- DEFAULT CONFIGURATION ---
+        const AUTHOR_CONFIG = {
+            name: "波比本人", 
+            pfp: "https://i.ibb.co/sdYKDmWK/IMG-8552.png", 
+            userPfp: "https://i.ibb.co/sdYKDmWK/IMG-8552.png", 
+            username: "波比用户", 
+            tagline: "书山有路勤为径" 
+        };
+
         const discordWebhookUrl = "";
 
+        // --- BOOK DATA WITH INDIVIDUAL AUTHOR SETTINGS ---
         const BOOKS_DATA = {
             "b1": { 
-                name: "我重生了，前一世我是正常男生被人欺负，这一世我决定成为男娘", author: "不是波比", 
-                cover: "https://i.ibb.co/PsrywRbb/7-A54-EF52-CFDA-4062-8-D0-C-D5-C2-B47-BBDBB.png", 
-                desc: `15岁，重生回聖恩慈心書院中二留级生魏家明，前世上课用iPad刷片、偷偷想玩王者却被MDM封死，永远倒数第一，被黄英泽那群人欺负三年，女生当空气，毕业后摆烂到30岁还跟妈挤出租屋，最后猝死在屏幕前。
-这一世，他发誓要认真学习！每天好好听课！努力读书！摆脱废物标签，做个正常男生！
-结果——系统强制上线了。
-【最靓男娘养成系统】用甜到发腻的femboy软萌少女音强行绑定：“宿主前世太惨啦～人家要帮你逆袭哦～拒绝无效喵～”
-想学习？封锁！想交友？无效！想正常做人？统统不行！
-系统直接unblock iPad MDM，让他能偷偷玩王者，但必须用可爱femboy音语音聊天辅助；逼他戴粉色蝴蝶结、穿丝袜打底裤、厕所练妆、肝颜值+可爱度；主线任务：成为全校最靓男娘！
-主角内心崩溃：“我明明想认真学习啊！系统你这个变态坑货！”
-却被系统甜甜威胁：“不肝男娘+玩游戏，就扣寿命+全校直播前世黑历史哦～嘻嘻～”
-从前排靠门社死位坐着，被黄英泽从后排右角扔纸团嘲讽；iPad偷偷刷男娘教程被巡堂老师差点抓包；厕所练妆差点被堵门……
-明明想当普通男生，却被系统一步步逼成“明姐”！
-这是一个重生少年，想努力学习却被强制男娘系统卷入抽象逆袭的沙雕爽文！
-“学习路线已封锁，男娘之路，肝就完事儿了！”
-“前世透明沙包，这一世被迫可爱yyds（被迫的）！”
-“系统：宿主乖乖当最靓男娘，人家用femboy音陪你玩王者～”
-“魏家明：我不想啊！！！”`, 
+                name: "剑神波比", 
+                authorName: "波比大侠", // Custom Author Name
+                authorPfp: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop", // Custom PFP
+                cover: "https://images.unsplash.com/photo-1543004404-4ef3c7f52ecd?q=60&w=150&auto=format&fit=crop", 
+                desc: `自幼便被视为废物的波比，在一场意外中觉醒了代码之魂。从此，他以笔为剑，斩尽天下Bug。\n\n「这个世界的底层逻辑，由我重新定义！」`, 
                 chapters: [
                     {t: "第一章 觉醒", c: `这是一个万物皆可被编译的世界...\n波比站在破旧的测试室中央，周围充满了蓝色的数据流。他的掌心微微发烫，一个闪烁的字符在皮肤下跃动。\n\n「初始化完成。」一个冰冷的系统音在他脑海中响起。\n\n在这个世界，普通人只能调用基础函数，而波比发现自己竟然能直接修改内核。这意味着，他可以改变重力，可以改写物体的密度，甚至可以删除他人的存在感。\n\n「Bug...我看见了Bug。」他凝视着面前傲慢的考官，嘴角露出一丝冷笑。在他眼里，这位不可一世的考官浑身都是破绽。`},
                     {t: "第二章 逆袭", c: `消息传得飞快。那个测试废柴竟然一招击败了考官！\n\n「不可能，他只是个没背景的底层代码员。」\n\n然而，当波比步入演武场时，所有的质疑都化为了寂静。他没有带剑，只是伸出手指在虚空中轻轻一点。\n\n「Delete.」\n\n瞬间，对手手中厚重的盾牌化为了漫天飞舞的光点。观众席上传来阵阵惊呼，那是从未见过的神迹。波比依然面无表情，他知道，这仅仅是个开始。在这个充满冗余和逻辑错误的世界，他要当那个唯一的管理员。`}
                 ] 
             },
             "b2": { 
-                name: "代码至尊", author: "加班狂人", 
+                name: "代码至尊", 
+                authorName: "波比本尊", // Custom Name
+                // If authorPfp is missing, it will use AUTHOR_CONFIG.pfp
                 cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=60&w=150&auto=format&fit=crop", 
                 desc: "在这个以代码强弱划分等级的世界，波比是唯一掌握了零 Bug 秘籍的男人。", 
                 chapters: [{t: "第一章 祭坛", c: `云端之巅，代码祭坛正散发着古老的数据波动...\n传说中，只有最纯粹的灵魂才能触碰那段禁忌的源代码。波比一步一步踏上阶梯，脚下的玉石台阶感应到了他的频率，发出悦耳的共鸣声。`}] 
             },
             "b3": { 
-                name: "深夜食堂", author: "美食家", 
+                name: "深夜食堂", 
+                authorName: "波比厨师", // Custom Name
+                authorPfp: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop", // Custom PFP
                 cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=60&w=150&auto=format&fit=crop", 
                 desc: "一间只在深夜营业的食堂，波比老板用代码烹饪灵魂。", 
                 chapters: [{t: "第一章 开业", c: `当时针指向十二点，偏僻小巷里的那盏红灯笼就会亮起...\n这里的菜谱没有名字，只有一段段温暖的数据指令。第一位客人推门而入，带着一身的疲惫和雨水的冰凉。`}] 
@@ -387,7 +410,8 @@
             MODE: 'bobi_read_mode_v5',
             THEME: 'bobi_theme_v5',
             FONTSIZE: 'bobi_font_size_v5',
-            FONTWEIGHT: 'bobi_font_weight_v5'
+            FONTWEIGHT: 'bobi_font_weight_v5',
+            FONTFAMILY: 'bobi_font_family_v5' 
         };
 
         let shelf = JSON.parse(localStorage.getItem(STORAGE.SHELF) || '[]');
@@ -397,12 +421,14 @@
         
         let currentFontSize = parseInt(localStorage.getItem(STORAGE.FONTSIZE) || '22');
         let isFontBold = localStorage.getItem(STORAGE.FONTWEIGHT) === 'true';
+        let currentFontType = localStorage.getItem(STORAGE.FONTFAMILY) || 'default';
 
         let currentId = null, timerInterval = null, currentCh = 0;
         let currentPagingIdx = 0, totalPages = 1;
-        let isNextChapterLoading = false; // Guard for infinite scroll
+        let isNextChapterLoading = false; 
 
         window.onload = () => {
+            initProfile();
             lucide.createIcons();
             renderList(Object.keys(BOOKS_DATA));
             renderShelf();
@@ -427,12 +453,25 @@
             resizeObserver.observe(readerFlow);
         };
 
+        function initProfile() {
+            document.getElementById('me-avatar-img').src = AUTHOR_CONFIG.userPfp;
+            document.getElementById('me-username').innerText = AUTHOR_CONFIG.username;
+            document.getElementById('me-tagline').innerText = AUTHOR_CONFIG.tagline;
+        }
+
         function initFontSettings() {
             document.getElementById('font-size-display').innerText = currentFontSize;
             document.documentElement.style.setProperty('--reader-font-size', currentFontSize + 'px');
             
+            const flow = document.getElementById('reader-flow');
+            
             document.getElementById('bold-font-toggle').checked = isFontBold;
-            if(isFontBold) document.getElementById('reader-flow').classList.add('bold-text');
+            if(isFontBold) flow.classList.add('bold-text');
+            
+            flow.classList.add('font-' + currentFontType);
+            document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+            const activeFontBtn = document.getElementById('btn-font-' + currentFontType);
+            if(activeFontBtn) activeFontBtn.classList.add('active');
         }
 
         function changeFontSize(delta) {
@@ -462,6 +501,21 @@
             }, 50);
         }
 
+        function changeFont(type) {
+            const flow = document.getElementById('reader-flow');
+            flow.classList.remove('font-default', 'font-serif', 'font-kaiti');
+            flow.classList.add('font-' + type);
+            currentFontType = type;
+            localStorage.setItem(STORAGE.FONTFAMILY, type);
+            
+            document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-font-' + type).classList.add('active');
+            
+            setTimeout(() => { 
+                if(readMode === 'paging') { calcPaging(); applyPaging(); } 
+            }, 50);
+        }
+
         function renderList(ids) {
             const grid = document.getElementById('store-grid');
             grid.innerHTML = ids.map(id => `
@@ -484,8 +538,7 @@
 
         function handleSearch(val) {
             const results = Object.keys(BOOKS_DATA).filter(id => 
-                BOOKS_DATA[id].name.toLowerCase().includes(val.toLowerCase()) || 
-                BOOKS_DATA[id].author.toLowerCase().includes(val.toLowerCase())
+                BOOKS_DATA[id].name.toLowerCase().includes(val.toLowerCase())
             );
             renderList(results);
         }
@@ -503,8 +556,11 @@
             currentId = id; const b = BOOKS_DATA[id];
             document.getElementById('det-cover').src = b.cover;
             document.getElementById('det-title').innerText = b.name;
-            document.getElementById('det-author').innerText = b.author;
-            document.getElementById('det-author-pfp').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(b.author)}`;
+            
+            // Logic to check if book has its own author settings
+            document.getElementById('det-author').innerText = b.authorName || AUTHOR_CONFIG.name;
+            document.getElementById('det-author-pfp').src = b.authorPfp || AUTHOR_CONFIG.pfp;
+            
             document.getElementById('det-desc').innerText = b.desc;
             document.getElementById('shelf-btn').innerText = shelf.includes(id) ? '移出书架' : '加入书架';
             
@@ -652,9 +708,8 @@
             if(readMode === 'scroll') {
                 const view = document.getElementById('reader-scroll-view');
                 const scrollPos = view.scrollTop + view.clientHeight;
-                const threshold = view.scrollHeight - 300; // Load next chapter when 300px from bottom
+                const threshold = view.scrollHeight - 300; 
 
-                // Infinite Scroll Logic: Load next chapter
                 if (scrollPos > threshold && !isNextChapterLoading) {
                     const lastChInView = parseInt(document.querySelector('.chapter-container:last-child').dataset.ch);
                     if (lastChInView < BOOKS_DATA[currentId].chapters.length - 1) {
@@ -663,7 +718,6 @@
                     }
                 }
 
-                // Update current chapter index based on what's visible
                 const chapters = document.querySelectorAll('.chapter-container');
                 chapters.forEach(c => {
                     const rect = c.getBoundingClientRect();
